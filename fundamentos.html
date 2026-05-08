@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MÓDULO 1 · Fundamentos Teóricos · UAGRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;700;900&family=Exo+2:ital,wght@0,200;0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<style>
+:root {
+  --void: #00020a;
+  --deep: #010510;
+  --panel: rgba(0,8,20,0.85);
+  --glass: rgba(0,212,255,0.04);
+  --glass2: rgba(255,184,0,0.04);
+  --border: rgba(0,212,255,0.15);
+  --border2: rgba(255,184,0,0.18);
+  --cyan: #00D4FF;
+  --cyan2: #00a8cc;
+  --cyan-dim: rgba(0,212,255,0.25);
+  --gold: #FFB800;
+  --gold-dim: rgba(255,184,0,0.25);
+  --red: #FF4060;
+  --green: #00FF9F;
+  --text: #8ab8cc;
+  --text-bright: #d8eef8;
+  --text-dim: #3a6070;
+  --mono: 'Share Tech Mono', monospace;
+  --title: 'Orbitron', sans-serif;
+  --body: 'Exo 2', sans-serif;
+  --glow-cyan: 0 0 20px rgba(0,212,255,0.4), 0 0 60px rgba(0,212,255,0.1);
+  --glow-gold: 0 0 20px rgba(255,184,0,0.4), 0 0 60px rgba(255,184,0,0.1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--void);
+  color: var(--text-bright);
+  font-family: var(--body);
+  font-weight: 300;
+  overflow-x: hidden;
+  cursor: crosshair;
+}
+
+/* ── STARFIELD ── */
+#starfield {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+}
+
+/* ── NOISE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 1; opacity: 0.4;
+}
+
+/* ── SCAN LINES ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px);
+  pointer-events: none; z-index: 2;
+}
+
+/* ── WRAPPER ── */
+#wrapper {
+  position: relative; z-index: 10;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* ══════════════════════════════════════
+   HERO HEADER
+══════════════════════════════════════ */
+.hero {
+  position: relative;
+  padding: 80px 0 60px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.hero-top-line {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.4em;
+  color: var(--cyan-dim);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  animation: fadeInDown 1s ease 0.2s both;
+}
+
+.module-tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--cyan);
+  border: 1px solid var(--border);
+  padding: 6px 20px;
+  background: var(--glass);
+  margin-bottom: 32px;
+  animation: fadeInDown 1s ease 0.4s both;
+  position: relative;
+}
+
+.module-tag::before, .module-tag::after {
+  content: '◈';
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  color: var(--gold);
+  font-size: 8px;
+}
+.module-tag::before { left: 6px; }
+.module-tag::after { right: 6px; }
+
+.hero-title {
+  font-family: var(--title);
+  font-weight: 900;
+  font-size: clamp(32px, 6vw, 72px);
+  line-height: 1.1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #ffffff 0%, var(--cyan) 50%, #ffffff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 12px;
+  animation: fadeInUp 1s ease 0.6s both;
+}
+
+.hero-subtitle {
+  font-family: var(--title);
+  font-size: clamp(11px, 2vw, 16px);
+  font-weight: 400;
+  letter-spacing: 0.35em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 40px;
+  animation: fadeInUp 1s ease 0.8s both;
+}
+
+/* MANIFESTO */
+.manifesto-block {
+  max-width: 780px;
+  margin: 0 auto 20px;
+  padding: 28px 40px;
+  border-left: 3px solid var(--gold);
+  border-right: 3px solid var(--gold);
+  background: var(--glass2);
+  backdrop-filter: blur(10px);
+  position: relative;
+  animation: fadeInUp 1s ease 1s both;
+}
+
+.manifesto-block::before, .manifesto-block::after {
+  content: '';
+  position: absolute;
+  left: -3px; right: -3px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.manifesto-block::before { top: 0; }
+.manifesto-block::after { bottom: 0; }
+
+.manifesto-quote {
+  font-family: var(--body);
+  font-weight: 200;
+  font-style: italic;
+  font-size: clamp(13px, 1.8vw, 17px);
+  line-height: 1.7;
+  color: #e8dcc0;
+  letter-spacing: 0.03em;
+}
+
+.manifesto-author {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--gold);
+  margin-top: 16px;
+  text-align: right;
+}
+
+/* HERO LINE */
+.hero-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  margin-top: 60px;
+  position: relative;
+  animation: expandW 1.5s ease 1.2s both;
+}
+
+@keyframes expandW {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.hero-divider::after {
+  content: '⚛';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--void);
+  padding: 0 16px;
+  color: var(--cyan);
+  font-size: 18px;
+}
+
+/* ══════════════════════════════════════
+   SECTION LABELS
+══════════════════════════════════════ */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 64px 0 32px;
+}
+
+.section-num {
+  font-family: var(--title);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cyan);
+  letter-spacing: 0.2em;
+  border: 1px solid var(--border);
+  padding: 4px 12px;
+  background: var(--glass);
+  white-space: nowrap;
+}
+
+.section-title-text {
+  font-family: var(--title);
+  font-size: clamp(16px, 3vw, 24px);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-bright);
+}
+
+.section-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
+}
+
+/* ══════════════════════════════════════
+   PHYSICS CARDS (Newton Laws)
+══════════════════════════════════════ */
+.laws-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.law-card {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  padding: 32px 28px;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  animation: cardIn 0.8s ease both;
+}
+
+.law-card:hover {
+  border-color: var(--cyan);
+  box-shadow: var(--glow-cyan);
+  transform: translateY(-4px);
+}
+
+.law-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+}
+
+.law-card.gold-card:hover {
+  border-color: var(--gold);
+  box-shadow: var(--glow-gold);
+}
+
+.law-card.gold-card::before {
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.law-num {
+  font-family: var(--title);
+  font-size: 42px;
+  font-weight: 900;
+  color: rgba(0,212,255,0.08);
+  position: absolute;
+  top: 16px; right: 20px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.law-card.gold-card .law-num { color: rgba(255,184,0,0.08); }
+
+.law-icon {
+  font-size: 28px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.law-title {
+  font-family: var(--title);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.law-card.gold-card .law-title { color: var(--gold); }
+
+.law-subtitle {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  margin-bottom: 18px;
+}
+
+.law-body {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.law-body strong { color: var(--text-bright); font-weight: 400; }
+.law-body .hl-cyan { color: var(--cyan); font-family: var(--mono); font-size: 12px; }
+.law-body .hl-gold { color: var(--gold); font-family: var(--mono); font-size: 12px; }
+
+.law-application {
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.7;
+  color: #5a9ab0;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  letter-spacing: 0.05em;
+}
+
+.law-application span { color: var(--cyan); }
+.law-card.gold-card .law-application span { color: var(--gold); }
+
+/* Mini animations inside cards */
+.mini-anim {
+  height: 50px;
+  position: relative;
+  margin: 16px 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.3);
+}
+
+/* Inertia animation: ball at rest → hit → moving */
+.anim-ball-static {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  left: 10%;
+  animation: inertiaBall 3s ease-in-out infinite;
+}
+
+@keyframes inertiaBall {
+  0%, 30% { left: 10%; }
+  40%, 100% { left: 80%; }
+}
+
+.anim-force-arrow {
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  left: 25%;
+  font-family: var(--mono);
+  font-size: 18px;
+  color: var(--gold);
+  animation: arrowFlash 3s ease-in-out infinite;
+}
+
+@keyframes arrowFlash {
+  0%, 25% { opacity: 1; }
+  40%, 100% { opacity: 0; }
+}
+
+/* F=ma animation: arrow proportional */
+.anim-fma-bar {
+  position: absolute;
+  left: 8px; top: 30%; height: 40%;
+  background: linear-gradient(90deg, var(--gold), var(--cyan));
+  border-radius: 2px;
+  animation: fmaBar 2s ease-in-out infinite alternate;
+}
+
+@keyframes fmaBar { from { width: 30px; } to { width: 160px; } }
+
+.anim-fma-label {
+  position: absolute;
+  right: 8px; top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--mono); font-size: 10px; color: var(--cyan);
+  animation: fmaBar2 2s ease-in-out infinite alternate;
+}
+
+@keyframes fmaBar2 { from { opacity: 0.3; } to { opacity: 1; } }
+
+/* Circular motion animation */
+.anim-circle-track {
+  position: absolute; top: 4px; left: 50%;
+  transform: translateX(-50%);
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: 1px dashed rgba(0,212,255,0.3);
+}
+
+.anim-orbit-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  position: absolute;
+  top: 50%; left: 50%;
+  margin: -4px 0 0 -4px;
+  animation: orbitDot 1.5s linear infinite;
+  transform-origin: 0 0;
+}
+
+@keyframes orbitDot {
+  from { transform: rotate(0deg) translateX(21px); }
+  to { transform: rotate(360deg) translateX(21px); }
+}
+
+.anim-centripetal-arrow {
+  position: absolute;
+  top: 50%; left: calc(50% + 4px);
+  width: 16px; height: 1px;
+  background: var(--gold);
+  transform-origin: 0 50%;
+  animation: centripetalArrow 1.5s linear infinite;
+}
+
+@keyframes centripetalArrow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Energy animation */
+.anim-energy-cap {
+  position: absolute;
+  left: 10px; top: 10px; bottom: 10px;
+  width: 20px;
+  border: 1px solid var(--gold);
+}
+
+.anim-energy-fill {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: var(--gold);
+  opacity: 0.5;
+  animation: energyDrain 2s ease-in-out infinite;
+}
+
+@keyframes energyDrain {
+  0% { height: 100%; }
+  50% { height: 10%; }
+  100% { height: 100%; }
+}
+
+.anim-energy-particle {
+  position: absolute;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan);
+  top: 50%; left: 40px;
+  animation: energyShoot 2s ease-in-out infinite;
+}
+
+@keyframes energyShoot {
+  0% { left: 40px; opacity: 0; }
+  20% { opacity: 1; }
+  80% { left: 80%; opacity: 1; }
+  100% { left: 80%; opacity: 0; }
+}
+
+/* ══════════════════════════════════════
+   SIMULATOR
+══════════════════════════════════════ */
+.simulator-section {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.simulator-section::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(0,212,255,0.03) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.sim-title {
+  font-family: var(--title);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: var(--cyan);
+  text-align: center;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.sim-tagline {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.sim-layout {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 32px;
+  align-items: start;
+}
+
+#accelCanvas {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--border);
+  background: #000510;
+  cursor: crosshair;
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+}
+
+.sim-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.ctrl-group {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+
+.ctrl-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  color: var(--cyan-dim);
+  margin-bottom: 8px;
+  display: block;
+  text-transform: uppercase;
+}
+
+.ctrl-value-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.ctrl-name {
+  font-family: var(--title);
+  font-size: 12px;
+  color: var(--text-bright);
+  letter-spacing: 0.1em;
+}
+
+.ctrl-val {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--gold);
+  font-weight: bold;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 3px;
+  background: var(--border);
+  outline: none;
+  border-radius: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  background: var(--cyan);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--cyan);
+  transition: box-shadow 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 16px var(--cyan);
+}
+
+input[type="range"].gold-range::-webkit-slider-thumb {
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+}
+
+.sim-readout {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  padding: 16px;
+}
+
+.readout-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(0,212,255,0.06);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.readout-key { color: var(--text-dim); letter-spacing: 0.08em; }
+.readout-val { color: var(--green); }
+.readout-val.warn { color: var(--gold); }
+
+.sim-btn {
+  font-family: var(--title);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 12px 20px;
+  border: 1px solid;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: transparent;
+  width: 100%;
+}
+
+.sim-btn.start {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.sim-btn.start:hover, .sim-btn.start.active {
+  background: rgba(0,212,255,0.1);
+  box-shadow: var(--glow-cyan);
+}
+
+.sim-btn.reset {
+  border-color: var(--text-dim);
+  color: var(--text-dim);
+  margin-top: 8px;
+}
+
+.sim-btn.reset:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.coil-indicator-row {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.coil-led {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,212,255,0.3);
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--text-dim);
+  transition: all 0.15s;
+}
+
+.coil-led.active {
+  background: var(--cyan);
+  border-color: var(--cyan);
+  color: var(--void);
+  box-shadow: 0 0 10px var(--cyan);
+}
+
+/* ══════════════════════════════════════
+   EQUATIONS SECTION
+══════════════════════════════════════ */
+.equations-grid {
+  display: grid;
+  gap: 24px;
+}
+
+.eq-card {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  padding: 36px 36px 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.eq-card:hover { border-color: rgba(0,212,255,0.4); }
+
+.eq-card::after {
+  content: attr(data-eq-num);
+  position: absolute;
+  bottom: 12px; right: 20px;
+  font-family: var(--title);
+  font-size: 80px;
+  font-weight: 900;
+  color: rgba(0,212,255,0.03);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.eq-card.eq-gold::after { color: rgba(255,184,0,0.04); }
+
+.eq-number {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  color: var(--cyan);
+  margin-bottom: 10px;
+}
+
+.eq-card.eq-gold .eq-number { color: var(--gold); }
+
+.eq-name {
+  font-family: var(--title);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-bright);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.eq-formula-box {
+  background: rgba(0,0,0,0.5);
+  border: 1px solid var(--border);
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 16px;
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eq-formula-box .MathJax { color: var(--cyan) !important; }
+
+.eq-col-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  color: var(--cyan-dim);
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.eq-card.eq-gold .eq-col-title { color: var(--gold-dim); }
+
+.eq-application {
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--text);
+}
+
+.eq-application strong { color: var(--cyan); font-weight: 400; }
+.eq-card.eq-gold .eq-application strong { color: var(--gold); }
+
+.eq-analogy {
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--text);
+  font-style: italic;
+}
+
+.analogy-source {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 8px;
+  font-style: normal;
+}
+
+/* Mini eq animations */
+.eq-mini-anim {
+  height: 44px;
+  position: relative;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.3);
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+/* Vector animation */
+.vec-arrow {
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  height: 2px;
+  background: var(--cyan);
+  left: 10px;
+  animation: vecGrow 1.5s ease-in-out infinite alternate;
+  transform-origin: left center;
+}
+
+@keyframes vecGrow { from { width: 20px; } to { width: 80%; } }
+
+.vec-head {
+  position: absolute;
+  right: 0; top: -4px;
+  width: 0; height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid var(--cyan);
+}
+
+.vec-label {
+  position: absolute;
+  right: 8px; bottom: 4px;
+  font-family: var(--mono); font-size: 9px; color: var(--cyan);
+}
+
+/* Pulse current animation */
+.pulse-wave {
+  position: absolute;
+  top: 50%; left: 0; right: 0;
+  transform: translateY(-50%);
+  height: 20px;
+  overflow: hidden;
+}
+
+.pulse-wave svg { width: 200%; height: 20px; animation: waveMarch 1s linear infinite; }
+@keyframes waveMarch { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* Efficiency bar */
+.eff-bar-bg {
+  position: absolute;
+  left: 10px; right: 10px;
+  top: 50%; transform: translateY(-50%);
+  height: 8px;
+  background: rgba(255,0,0,0.2);
+}
+
+.eff-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--green));
+  animation: effFill 2s ease-in-out infinite alternate;
+}
+
+@keyframes effFill { from { width: 40%; } to { width: 85%; } }
+
+.eff-label { position: absolute; right: 14px; top: 4px; font-family: var(--mono); font-size: 9px; color: var(--gold); animation: effFill2 2s ease-in-out infinite alternate; }
+@keyframes effFill2 { from { opacity: 0.3; } to { opacity: 1; } }
+
+/* Field lines */
+.field-line {
+  position: absolute;
+  top: 8px; bottom: 8px; width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--cyan), transparent);
+  animation: fieldPulse 1.5s ease-in-out infinite;
+}
+@keyframes fieldPulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+
+/* Resistivity */
+.resist-particle {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  top: 50%; transform: translateY(-50%);
+  animation: resistMove 2s linear infinite;
+}
+
+@keyframes resistMove {
+  0% { left: 5%; opacity: 1; }
+  30% { left: 28%; transform: translateY(-50%); }
+  35% { transform: translateY(calc(-50% - 8px)); }
+  40% { transform: translateY(-50%); }
+  65% { left: 58%; transform: translateY(-50%); }
+  70% { transform: translateY(calc(-50% + 8px)); }
+  75% { transform: translateY(-50%); }
+  100% { left: 90%; opacity: 0.3; }
+}
+
+/* ══════════════════════════════════════
+   FOOTER
+══════════════════════════════════════ */
+.page-footer {
+  margin-top: 80px;
+  border-top: 1px solid var(--border);
+  padding: 40px 0 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
+.footer-col-title {
+  letter-spacing: 0.2em;
+  color: var(--cyan);
+  margin-bottom: 10px;
+}
+
+.footer-col-body {
+  line-height: 2;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+}
+
+.footer-col-body span { color: var(--text); }
+
+.footer-bottom {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0,212,255,0.06);
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+}
+
+/* ══════════════════════════════════════
+   ANIMATIONS / UTILS
+══════════════════════════════════════ */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card-delay-1 { animation-delay: 0.1s; }
+.card-delay-2 { animation-delay: 0.2s; }
+.card-delay-3 { animation-delay: 0.35s; }
+.card-delay-4 { animation-delay: 0.5s; }
+
+@media (max-width: 900px) {
+  .sim-layout { grid-template-columns: 1fr; }
+  .eq-card { grid-template-columns: 1fr; }
+  .page-footer { grid-template-columns: 1fr; }
+  .laws-grid { grid-template-columns: 1fr; }
+}
+
+/* Glow pulse on section entry */
+.glow-border-animate {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(0,212,255,0.1); }
+  50% { box-shadow: 0 0 30px rgba(0,212,255,0.25); }
+}
+
+/* Tag styles */
+.info-tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: var(--gold);
+  border: 1px solid var(--gold-dim);
+  padding: 3px 10px;
+  background: var(--glass2);
+  margin-right: 6px;
+  margin-bottom: 6px;
+}
+
+.sim-coil-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-top: 12px;
+  justify-content: center;
+}
+
+.legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+
+<div id="wrapper">
+
+  <!-- ═══════════════════════ HERO ═══════════════════════ -->
+  <div class="hero">
+    <div class="hero-top-line">UAGRM · Facultad de Ingeniería · Física I · 2025</div>
+    <div class="module-tag">PROYECTO FINAL &nbsp;·&nbsp; MÓDULO 1 DE 4</div>
+    <h1 class="hero-title">Fundamentos Teóricos</h1>
+    <div class="hero-subtitle">Acelerador Circular de Partículas · 6 Bobinas Electromagnéticas</div>
+
+    <div class="manifesto-block">
+      <p class="manifesto-quote">
+        "No construimos un acelerador. Construimos una ventana hacia las leyes fundamentales que gobiernan el universo observable."
+      </p>
+      <div class="manifesto-author">— Manifiesto Físico · Equipo de Diseño · UAGRM 2025</div>
+    </div>
+
+    <div class="hero-divider"></div>
+  </div>
+
+
+  <!-- ═══════════════════════ SECCIÓN 1: LEYES DE NEWTON ═══════════════════════ -->
+  <div class="section-label">
+    <div class="section-num">SEC · 01</div>
+    <div class="section-title-text">Principios de Mecánica Clásica Aplicados</div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="laws-grid">
+
+    <!-- LEY 1: INERCIA -->
+    <div class="law-card card-delay-1">
+      <div class="law-num">I</div>
+      <span class="law-icon">⊙</span>
+      <div class="law-title">1ª Ley · Inercia</div>
+      <div class="law-subtitle">LEY DE LA CONSERVACIÓN DEL MOVIMIENTO</div>
+      <div class="law-body">
+        El proyectil metálico permanece en <strong>reposo absoluto</strong> hasta que la <span class="hl-gold">Bobina 1</span> descarga su campo magnético pulsado. La inercia es la resistencia del cuerpo a cambiar su estado: sin la fuerza de la primera etapa, la partícula <em>nunca se movería</em>.
+      </div>
+      <div class="mini-anim">
+        <div class="anim-ball-static"></div>
+        <div class="anim-force-arrow">⚡→</div>
+      </div>
+      <div class="law-application">
+        <span>En nuestro prototipo:</span> La masa del proyectil (≈5g) define su inercia. A mayor masa, mayor energía necesaria en la Bobina 1 para romper el estado estático. Por eso calibramos el voltaje inicial del capacitor C₁.
+      </div>
+    </div>
+
+    <!-- LEY 2: F=ma -->
+    <div class="law-card card-delay-2">
+      <div class="law-num">II</div>
+      <span class="law-icon">→</span>
+      <div class="law-title">2ª Ley · Fuerza Neta</div>
+      <div class="law-subtitle">F = m · a &nbsp;·&nbsp; ACELERACIÓN SECUENCIAL</div>
+      <div class="law-body">
+        Cada una de las <strong>6 bobinas</strong> aplica un impulso electromagnético. La fuerza neta sobre el proyectil es la suma vectorial de estos <span class="hl-cyan">6 pulsos secuenciales</span>, incrementando la velocidad en cada etapa como un relevo cuántico.
+      </div>
+      <div class="mini-anim">
+        <div class="anim-fma-bar"></div>
+        <div class="anim-fma-label">F↑ → a↑</div>
+      </div>
+      <div class="law-application">
+        <span>En nuestro prototipo:</span> F_total = m·a → a = F/m. Con 6 pulsos de fuerza F₁...F₆, la aceleración acumulada a_total = Σ(Fₙ)/m determina la velocidad final de salida del sistema.
+      </div>
+    </div>
+
+    <!-- MOVIMIENTO CIRCULAR -->
+    <div class="law-card gold-card card-delay-3">
+      <div class="law-num">⊗</div>
+      <span class="law-icon" style="color:var(--gold)">↻</span>
+      <div class="law-title" >Fuerza Centrípeta</div>
+      <div class="law-subtitle">MOVIMIENTO CIRCULAR UNIFORME</div>
+      <div class="law-body">
+        La partícula no vuela en línea recta porque el <strong>anillo conductor circular</strong> actúa como guía, y la fuerza centrípeta <span class="hl-gold">Fc = mv²/r</span> la obliga a curvarse continuamente hacia el centro. Sin ella, saldría disparada tangencialmente.
+      </div>
+      <div class="mini-anim" style="border-color:var(--gold-dim)">
+        <div class="anim-circle-track" style="border-color:rgba(255,184,0,0.3)"></div>
+        <div class="anim-orbit-dot" style="background:var(--gold);box-shadow:0 0 8px var(--gold)"></div>
+        <div class="anim-centripetal-arrow" style="background:var(--cyan)"></div>
+      </div>
+      <div class="law-application" style="border-color:var(--gold-dim)">
+        <span style="color:var(--gold)">En nuestro prototipo:</span> El radio del anillo (r) define la fuerza centrípeta necesaria. Las 6 bobinas están distribuidas en ángulos de 60° exactos para mantener Fc constante y el trayecto perfectamente circular.
+      </div>
+    </div>
+
+    <!-- TRABAJO Y ENERGÍA -->
+    <div class="law-card gold-card card-delay-4" style="grid-column: span 1;">
+      <div class="law-num">E</div>
+      <span class="law-icon" style="color:var(--gold)">⚡</span>
+      <div class="law-title">Trabajo y Energía</div>
+      <div class="law-subtitle">W = ΔEₖ · CONVERSIÓN ENERGÉTICA</div>
+      <div class="law-body">
+        Los <strong>capacitores</strong> almacenan energía eléctrica (E = ½CV²) y la convierten en energía cinética del proyectil (Eₖ = ½mv²). El rozamiento con el riel y la resistencia del conductor generan pérdidas que <span class="hl-gold">reducen la eficiencia</span> real del sistema.
+      </div>
+      <div class="mini-anim" style="border-color:var(--gold-dim)">
+        <div class="anim-energy-cap"></div>
+        <div class="anim-energy-fill"></div>
+        <div class="anim-energy-particle"></div>
+      </div>
+      <div class="law-application" style="border-color:var(--gold-dim)">
+        <span style="color:var(--gold)">En nuestro prototipo:</span> W_neto = ½mv²_f − ½mv²_i = W_magnético − W_rozamiento. Medimos η = (Eₖ_salida / E_capacitor) × 100% para cada etapa del sistema de 6 bobinas.
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ═══════════════════════ SECCIÓN 2: SIMULADOR ═══════════════════════ -->
+  <div class="section-label">
+    <div class="section-num">SEC · 02</div>
+    <div class="section-title-text">Simulador Interactivo en Vivo</div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="simulator-section glow-border-animate">
+    <div class="sim-title">Simulación 2D · Trayectoria Circular con 6 Bobinas Activas</div>
+    <div class="sim-tagline">// CANVAS PARAMÉTRICO · AJUSTE VOLTAJE Y ROZAMIENTO EN TIEMPO REAL</div>
+
+    <div class="sim-layout">
+      <div>
+        <canvas id="accelCanvas" width="620" height="480"></canvas>
+        <div class="coil-indicator-row" id="coilLeds">
+          <div class="coil-led" id="led0">B1</div>
+          <div class="coil-led" id="led1">B2</div>
+          <div class="coil-led" id="led2">B3</div>
+          <div class="coil-led" id="led3">B4</div>
+          <div class="coil-led" id="led4">B5</div>
+          <div class="coil-led" id="led5">B6</div>
+        </div>
+        <div class="sim-coil-legend">
+          <div class="legend-dot" style="background:var(--cyan)"></div><span>Partícula</span>
+          &nbsp;&nbsp;
+          <div class="legend-dot" style="background:var(--gold)"></div><span>Bobina activa</span>
+          &nbsp;&nbsp;
+          <div class="legend-dot" style="background:rgba(0,212,255,0.15)"></div><span>Estela</span>
+        </div>
+      </div>
+
+      <div class="sim-controls">
+
+        <div class="ctrl-group">
+          <span class="ctrl-label">// PARÁMETRO DE ENERGÍA</span>
+          <div class="ctrl-value-row">
+            <span class="ctrl-name">Voltaje (V)</span>
+            <span class="ctrl-val" id="voltVal">300 V</span>
+          </div>
+          <input type="range" id="voltSlider" min="50" max="600" value="300" step="10">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);margin-top:8px;letter-spacing:0.08em">
+            Aumenta la velocidad angular ω del proyectil
+          </div>
+        </div>
+
+        <div class="ctrl-group">
+          <span class="ctrl-label">// PÉRDIDAS POR ROZAMIENTO</span>
+          <div class="ctrl-value-row">
+            <span class="ctrl-name">Rozamiento (μ)</span>
+            <span class="ctrl-val" id="fricVal" style="color:var(--red)">0.05</span>
+          </div>
+          <input type="range" class="gold-range" id="fricSlider" min="0" max="0.3" value="0.05" step="0.01">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);margin-top:8px;letter-spacing:0.08em">
+            Simula fricción del riel y resistencia del aire
+          </div>
+        </div>
+
+        <div class="sim-readout">
+          <span class="ctrl-label">// TELEMETRÍA EN VIVO</span>
+          <div class="readout-row">
+            <span class="readout-key">VELOCIDAD</span>
+            <span class="readout-val" id="rd-vel">0.00 m/s</span>
+          </div>
+          <div class="readout-row">
+            <span class="readout-key">BOBINA ACTIVA</span>
+            <span class="readout-val" id="rd-coil">—</span>
+          </div>
+          <div class="readout-row">
+            <span class="readout-key">ÁNGULO</span>
+            <span class="readout-val" id="rd-angle">0.0°</span>
+          </div>
+          <div class="readout-row">
+            <span class="readout-key">Eₖ CINÉTICA</span>
+            <span class="readout-val warn" id="rd-ek">0.00 mJ</span>
+          </div>
+          <div class="readout-row">
+            <span class="readout-key">VUELTA #</span>
+            <span class="readout-val" id="rd-laps">0</span>
+          </div>
+          <div class="readout-row">
+            <span class="readout-key">EFICIENCIA η</span>
+            <span class="readout-val" id="rd-eff">—</span>
+          </div>
+        </div>
+
+        <button class="sim-btn start" id="simToggle" onclick="toggleSim()">▶ INICIAR SIMULACIÓN</button>
+        <button class="sim-btn reset" onclick="resetSim()">↺ REINICIAR</button>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════ SECCIÓN 3: ECUACIONES VIVAS ═══════════════════════ -->
+  <div class="section-label">
+    <div class="section-num">SEC · 03</div>
+    <div class="section-title-text">Las 5 Ecuaciones Fundamentales del Sistema</div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="equations-grid">
+
+    <!-- EQ 1: FUERZA NETA -->
+    <div class="eq-card" data-eq-num="01">
+      <div>
+        <div class="eq-number">EQ · 01 / 05</div>
+        <div class="eq-name">Fuerza Neta del Sistema</div>
+        <div class="eq-formula-box">
+          \( F_{neta} = \sum_{i=1}^{6} F_i = m \cdot a_{total} \)
+        </div>
+        <div class="eq-mini-anim">
+          <div class="vec-arrow" style="top:50%;transform:translateY(-50%)">
+            <div class="vec-head"></div>
+          </div>
+          <div class="vec-label">F_total →</div>
+        </div>
+      </div>
+      <div>
+        <div class="eq-col-title">// Aplicación al Proyecto</div>
+        <div class="eq-application">
+          En nuestro sistema de <strong>6 etapas</strong>, esto significa que la aceleración final del proyectil es la suma de los 6 impulsos magnéticos de cada bobina. Si cada bobina genera una fuerza promedio de <strong>F_i ≈ 0.5N</strong>, la fuerza total es <strong>F_neta ≈ 3N</strong>, produciendo a = 600 m/s² sobre un proyectil de 5g.
+        </div>
+      </div>
+      <div>
+        <div class="eq-col-title">// Analogía para la Defensa</div>
+        <div class="eq-analogy">
+          Es como un corredor de relevos: cada bobina es un compañero que "empuja" al portador del testigo. Solo sumando los esfuerzos de los 6 corredores se alcanza la velocidad final de la carrera.
+        </div>
+        <div class="analogy-source">▸ Newton, Philosophiæ Naturalis Principia Mathematica, 1687</div>
+      </div>
+    </div>
+
+    <!-- EQ 2: CORRIENTE DE PULSO -->
+    <div class="eq-card eq-gold" data-eq-num="02">
+      <div>
+        <div class="eq-number" style="color:var(--gold)">EQ · 02 / 05</div>
+        <div class="eq-name">Corriente de Pulso</div>
+        <div class="eq-formula-box" style="border-color:var(--gold-dim)">
+          \( I_{pulso} = \frac{V_0}{R} \cdot e^{-t/\tau} \quad , \quad \tau = \frac{L}{R} \)
+        </div>
+        <div class="eq-mini-anim" style="border-color:var(--gold-dim)">
+          <div class="pulse-wave">
+            <svg viewBox="0 0 200 20" preserveAspectRatio="none">
+              <polyline points="0,10 15,2 30,18 45,2 60,18 75,2 90,18 105,2 120,18 135,2 150,18 165,2 180,18 195,2 200,10"
+                fill="none" stroke="#FFB800" stroke-width="1.5" opacity="0.8"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="eq-col-title" style="color:var(--gold-dim)">// Aplicación al Proyecto</div>
+        <div class="eq-application">
+          En nuestro sistema de <strong>6 etapas</strong>, esto significa que cada capacitor se descarga con una corriente que decae exponencialmente. La constante de tiempo τ = L/R determina cuánto dura el pulso. Diseñamos τ ≈ 0.5ms para que el pico de corriente coincida exactamente cuando el proyectil pasa por el centro de cada bobina.
+        </div>
+      </div>
+      <div>
+        <div class="eq-col-title" style="color:var(--gold-dim)">// Analogía para la Defensa</div>
+        <div class="eq-analogy">
+          Como una ola de surf: llega rápido a su punto máximo y luego se disipa gradualmente. El proyectil debe surfear la cresta de esa ola energética en el instante preciso para recibir la máxima aceleración.
+        </div>
+        <div class="analogy-source">▸ Kirchhoff, Leyes de Circuitos, 1845 · Faraday, Inducción Electromagnética, 1831</div>
+      </div>
+    </div>
+
+    <!-- EQ 3: EFICIENCIA -->
+    <div class="eq-card" data-eq-num="03">
+      <div>
+        <div class="eq-number">EQ · 03 / 05</div>
+        <div class="eq-name">Eficiencia Energética η</div>
+        <div class="eq-formula-box">
+          \( \eta = \frac{E_k}{E_{cap}} \times 100\% = \frac{\frac{1}{2}mv^2}{\frac{1}{2}CV_0^2} \times 100\% \)
+        </div>
+        <div class="eq-mini-anim">
+          <div class="eff-bar-bg"><div class="eff-bar-fill"></div></div>
+          <div class="eff-label">η %</div>
+        </div>
+      </div>
+      <div>
+        <div class="eq-col-title">// Aplicación al Proyecto</div>
+        <div class="eq-application">
+          En nuestro sistema de <strong>6 etapas</strong>, esto significa que medimos qué fracción de la energía eléctrica almacenada (½CV²) se convierte realmente en movimiento del proyectil. Pérdidas típicas: calor en la resistencia del cobre (~40%), campo disperso (~20%). Meta de diseño: <strong>η &gt; 35%</strong> por etapa.
+        </div>
+      </div>
+      <div>
+        <div class="eq-col-title">// Analogía para la Defensa</div>
+        <div class="eq-analogy">
+          Como el motor de un automóvil: no toda la energía de la gasolina mueve las ruedas; parte se pierde en calor del motor y fricción mecánica. Nuestra meta es minimizar ese "calor desperdiciado" optimizando el tiempo de disparo de cada etapa.
+        </div>
+        <div class="analogy-source">▸ Joule, Ley de Calor Eléctrico, 1841 · Termodinámica, 1er Principio</div>
+      </div>
+    </div>
+
+    <!-- EQ 4: CAMPO MAGNÉTICO -->
+    <div class="eq-card eq-gold" data-eq-num="04">
+      <div>
+        <div class="eq-number" style="color:var(--gold)">EQ · 04 / 05</div>
+        <div class="eq-name">Campo Magnético de la Bobina</div>
+        <div class="eq-formula-box" style="border-color:var(--gold-dim)">
+          \( B = \frac{\mu_0 \cdot N \cdot I}{l} \quad , \quad F_{mag} = q\vec{v} \times \vec{B} \)
+        </div>
+        <div class="eq-mini-anim" style="border-color:var(--gold-dim)">
+          <div class="field-line" style="left:20%"></div>
+          <div class="field-line" style="left:35%;animation-delay:0.2s"></div>
+          <div class="field-line" style="left:50%;animation-delay:0.4s"></div>
+          <div class="field-line" style="left:65%;animation-delay:0.6s"></div>
+          <div class="field-line" style="left:80%;animation-delay:0.8s;background:linear-gradient(to bottom,transparent,var(--gold),transparent)"></div>
+        </div>
+      </div>
+      <div>
+        <div class="eq-col-title" style="color:var(--gold-dim)">// Aplicación al Proyecto</div>
+        <div class="eq-application">
+          En nuestro sistema de <strong>6 etapas</strong>, esto significa que el campo B de cada bobina depende del número de vueltas N y la corriente I. Diseñamos N = 150 vueltas de cobre AWG22, generando B ≈ 0.08T por bobina. La fuerza de Lorentz resultante sobre las cargas del proyectil produce el impulso lineal deseado.
+        </div>
+      </div>
+      <div>
+        <div class="eq-col-title" style="color:var(--gold-dim)">// Analogía para la Defensa</div>
+        <div class="eq-analogy">
+          Imagina un tobogán de agua invisible: el campo magnético es ese tobogán, y el proyectil "cae" a través de él. Cuantas más vueltas tiene la bobina, más pronunciado (más inclinado) es el tobogán, y más rápido cae la partícula.
+        </div>
+        <div class="analogy-source">▸ Ampère, Ley de Fuerza Magnética, 1820 · Lorentz, Fuerza sobre Carga, 1895</div>
+      </div>
+    </div>
+
+    <!-- EQ 5: RESISTIVIDAD / ROZAMIENTO -->
+    <div class="eq-card" data-eq-num="05">
+      <div>
+        <div class="eq-number">EQ · 05 / 05</div>
+        <div class="eq-name">Resistividad y Rozamiento</div>
+        <div class="eq-formula-box">
+          \( W_{neto} = W_{magnético} - W_{rozamiento} = \Delta E_k \)
+        </div>
+        <div class="eq-mini-anim">
+          <div class="resist-particle"></div>
+          <div style="position:absolute;left:30%;top:30%;width:4px;height:4px;background:var(--red);border-radius:50%;opacity:0.6;animation:sparkle 0.5s 0.6s infinite alternate"></div>
+          <div style="position:absolute;left:60%;top:60%;width:4px;height:4px;background:var(--red);border-radius:50%;opacity:0.6;animation:sparkle 0.5s 1.4s infinite alternate"></div>
+          <style>@keyframes sparkle{from{opacity:0}to{opacity:0.8}}</style>
+        </div>
+      </div>
+      <div>
+        <div class="eq-col-title">// Aplicación al Proyecto</div>
+        <div class="eq-application">
+          En nuestro sistema de <strong>6 etapas</strong>, esto significa que el trabajo neto sobre el proyectil es la diferencia entre la energía que aporta el campo magnético y la que pierde por fricción con el riel guía. El rozamiento aumenta con la velocidad: W_roz = μ·N·d, donde d es la distancia recorrida en cada etapa (≈ longitud de la bobina).
+        </div>
+      </div>
+      <div>
+        <div class="eq-col-title">// Analogía para la Defensa</div>
+        <div class="eq-analogy">
+          Como caminar contra el viento: cuanto más rápido intentas ir, más resistencia opone el aire. En nuestro acelerador, cada bobina tiene que "pelear" contra la fricción acumulada para añadir velocidad neta. Por eso el diseño del riel sin contacto es crítico.
+        </div>
+        <div class="analogy-source">▸ Coulomb, Fricción Mecánica, 1781 · Teorema Trabajo-Energía, Mecánica Clásica</div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- FOOTER -->
+  <div class="page-footer">
+    <div>
+      <div class="footer-col-title">// IDENTIFICACIÓN</div>
+      <div class="footer-col-body">
+        PROYECTO: <span>Acelerador Circular 6 Bobinas</span><br>
+        MÓDULO: <span>01 de 04 · Fundamentos</span><br>
+        UNIVERSIDAD: <span>UAGRM · Bolivia</span><br>
+        ASIGNATURA: <span>Física I</span>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">// MARCO TEÓRICO</div>
+      <div class="footer-col-body">
+        Newton · <span>Leyes del Movimiento, 1687</span><br>
+        Faraday · <span>Inducción EM, 1831</span><br>
+        Maxwell · <span>Electromagnetismo, 1865</span><br>
+        Lorentz · <span>Fuerza sobre Carga, 1895</span>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">// PARÁMETROS DEL PROTOTIPO</div>
+      <div class="footer-col-body">
+        BOBINAS: <span>6 × N=150 vueltas AWG22</span><br>
+        SEPARACIÓN: <span>60° equidistantes</span><br>
+        RADIO ANILLO: <span>~15 cm</span><br>
+        CAPACITORES: <span>6 × 4700μF / 400V</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    MÓDULO 1 · FUNDAMENTOS TEÓRICOS · FÍSICA I · UAGRM 2025 &nbsp;·&nbsp; DISEÑADO CON RIGOR CIENTÍFICO Y VISIÓN DE LABORATORIO
+  </div>
+
+</div><!-- /wrapper -->
+
+<script>
+/* ══════════════════════════════════════
+   STARFIELD
+══════════════════════════════════════ */
+(function() {
+  const c = document.getElementById('starfield');
+  const ctx = c.getContext('2d');
+  let stars = [];
+
+  function resize() {
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  for (let i = 0; i < 200; i++) {
+    stars.push({
+      x: Math.random(), y: Math.random(),
+      r: Math.random() * 1.2,
+      a: Math.random(),
+      da: (Math.random() - 0.5) * 0.006
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    stars.forEach(s => {
+      s.a += s.da;
+      if (s.a <= 0 || s.a >= 1) s.da = -s.da;
+      ctx.beginPath();
+      ctx.arc(s.x * c.width, s.y * c.height, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(180,220,255,${s.a * 0.4})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+
+/* ══════════════════════════════════════
+   SIMULATOR ENGINE
+══════════════════════════════════════ */
+const canvas = document.getElementById('accelCanvas');
+const ctx = canvas.getContext('2d');
+
+const CX = canvas.width / 2;
+const CY = canvas.height / 2;
+const RADIUS = 160;
+const NUM_COILS = 6;
+const COIL_ANGLES = Array.from({length: NUM_COILS}, (_, i) => (i * Math.PI * 2) / NUM_COILS - Math.PI / 2);
+const PARTICLE_MASS = 0.005; // kg
+
+let sim = {
+  running: false,
+  angle: -Math.PI / 2,        // start at top (coil 0)
+  omega: 0,                    // angular velocity rad/s
+  trail: [],
+  laps: 0,
+  coilFlash: new Array(NUM_COILS).fill(0),
+  lastCoil: -1,
+  lastLapAngle: -Math.PI / 2
+};
+
+let voltage = 300;
+let friction = 0.05;
+let animId = null;
+
+document.getElementById('voltSlider').addEventListener('input', function() {
+  voltage = +this.value;
+  document.getElementById('voltVal').textContent = voltage + ' V';
+});
+
+document.getElementById('fricSlider').addEventListener('input', function() {
+  friction = +this.value;
+  document.getElementById('fricVal').textContent = (+this.value).toFixed(2);
+});
+
+function getNearestCoil(angle) {
+  let norm = ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+  let minD = Infinity, idx = 0;
+  COIL_ANGLES.forEach((ca, i) => {
+    let cn = ((ca % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+    let d = Math.abs(norm - cn);
+    if (d > Math.PI) d = Math.PI * 2 - d;
+    if (d < minD) { minD = d; idx = i; }
+  });
+  return { idx, dist: minD };
+}
+
+function update(dt) {
+  if (!sim.running) return;
+
+  // Coil boost: within 0.18 rad of each coil
+  const { idx, dist } = getNearestCoil(sim.angle);
+  let boosted = false;
+  if (dist < 0.18) {
+    // Magnetic force converts capacitor energy to kinetic boost
+    const F_mag = (voltage * voltage * 0.0001) * Math.exp(-dist * 8);
+    const alpha = F_mag / (PARTICLE_MASS * RADIUS * RADIUS);
+    sim.omega += alpha * dt;
+    if (idx !== sim.lastCoil) {
+      sim.coilFlash[idx] = 1.0;
+      sim.lastCoil = idx;
+      boosted = true;
+    }
+  } else {
+    sim.lastCoil = -1;
+  }
+
+  // Friction: W_roz = μ * N * d → reduces omega
+  const frictionAlpha = friction * 9.8 / RADIUS * (sim.omega > 0 ? 1 : -1);
+  sim.omega = Math.max(0, sim.omega - frictionAlpha * dt);
+
+  // Clamp max speed (physical limit)
+  sim.omega = Math.min(sim.omega, 4.0);
+
+  // Advance angle
+  sim.angle += sim.omega * dt;
+
+  // Lap counting
+  const angleDiff = sim.angle - sim.lastLapAngle;
+  if (angleDiff >= Math.PI * 2) {
+    sim.laps++;
+    sim.lastLapAngle += Math.PI * 2;
+  }
+
+  // Trail
+  const px = CX + RADIUS * Math.cos(sim.angle);
+  const py = CY + RADIUS * Math.sin(sim.angle);
+  sim.trail.push({ x: px, y: py, a: 1.0 });
+  if (sim.trail.length > 120) sim.trail.shift();
+  sim.trail.forEach(t => t.a *= 0.975);
+
+  // Decay coil flashes
+  sim.coilFlash = sim.coilFlash.map(f => Math.max(0, f - dt * 4));
+
+  updateReadout();
+}
+
+function drawFrame() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Background grid
+  ctx.strokeStyle = 'rgba(0,212,255,0.04)';
+  ctx.lineWidth = 0.5;
+  const gs = 40;
+  for (let x = 0; x < canvas.width; x += gs) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+  }
+  for (let y = 0; y < canvas.height; y += gs) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+  }
+
+  // Center crosshair
+  ctx.strokeStyle = 'rgba(0,212,255,0.12)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 8]);
+  ctx.beginPath(); ctx.moveTo(CX - 20, CY); ctx.lineTo(CX + 20, CY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(CX, CY - 20); ctx.lineTo(CX, CY + 20); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Main ring
+  ctx.beginPath();
+  ctx.arc(CX, CY, RADIUS, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(0,212,255,0.12)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Ring glow
+  const ringGrad = ctx.createRadialGradient(CX, CY, RADIUS - 8, CX, CY, RADIUS + 8);
+  ringGrad.addColorStop(0, 'rgba(0,212,255,0.0)');
+  ringGrad.addColorStop(0.5, 'rgba(0,212,255,0.05)');
+  ringGrad.addColorStop(1, 'rgba(0,212,255,0.0)');
+  ctx.beginPath(); ctx.arc(CX, CY, RADIUS, 0, Math.PI * 2);
+  ctx.lineWidth = 16; ctx.strokeStyle = ringGrad; ctx.stroke();
+
+  // Draw trail
+  for (let i = 1; i < sim.trail.length; i++) {
+    const t = sim.trail[i];
+    const tp = sim.trail[i - 1];
+    ctx.beginPath();
+    ctx.moveTo(tp.x, tp.y);
+    ctx.lineTo(t.x, t.y);
+    ctx.strokeStyle = `rgba(0,212,255,${t.a * 0.4})`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  // Draw coils
+  COIL_ANGLES.forEach((ca, i) => {
+    const cx2 = CX + RADIUS * Math.cos(ca);
+    const cy2 = CY + RADIUS * Math.sin(ca);
+    const flash = sim.coilFlash[i];
+    const baseR = 14;
+    const glowR = baseR + flash * 20;
+
+    // Flash glow
+    if (flash > 0.01) {
+      const g = ctx.createRadialGradient(cx2, cy2, 0, cx2, cy2, glowR * 1.5);
+      g.addColorStop(0, `rgba(255,184,0,${flash * 0.8})`);
+      g.addColorStop(1, 'rgba(255,184,0,0)');
+      ctx.beginPath(); ctx.arc(cx2, cy2, glowR * 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = g; ctx.fill();
+    }
+
+    // Coil body
+    ctx.beginPath();
+    ctx.arc(cx2, cy2, baseR, 0, Math.PI * 2);
+    const coilGrad = ctx.createRadialGradient(cx2 - 3, cy2 - 3, 0, cx2, cy2, baseR);
+    if (flash > 0.05) {
+      coilGrad.addColorStop(0, `rgba(255,230,100,${0.4 + flash * 0.6})`);
+      coilGrad.addColorStop(1, `rgba(255,184,0,${0.2 + flash * 0.4})`);
+    } else {
+      coilGrad.addColorStop(0, 'rgba(0,60,80,0.8)');
+      coilGrad.addColorStop(1, 'rgba(0,30,50,0.6)');
+    }
+    ctx.fillStyle = coilGrad;
+    ctx.fill();
+
+    ctx.strokeStyle = flash > 0.05 ? `rgba(255,184,0,${0.6 + flash * 0.4})` : 'rgba(0,212,255,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Coil label
+    ctx.fillStyle = flash > 0.05 ? '#000' : 'rgba(0,212,255,0.7)';
+    ctx.font = `bold 9px 'Share Tech Mono'`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('B' + (i + 1), cx2, cy2);
+
+    // LED update
+    const led = document.getElementById('led' + i);
+    if (flash > 0.1) led.classList.add('active');
+    else led.classList.remove('active');
+  });
+
+  // Draw particle
+  const px = CX + RADIUS * Math.cos(sim.angle);
+  const py = CY + RADIUS * Math.sin(sim.angle);
+
+  // Particle glow
+  const pg = ctx.createRadialGradient(px, py, 0, px, py, 16);
+  pg.addColorStop(0, 'rgba(0,212,255,0.8)');
+  pg.addColorStop(0.3, 'rgba(0,212,255,0.3)');
+  pg.addColorStop(1, 'rgba(0,212,255,0)');
+  ctx.beginPath(); ctx.arc(px, py, 16, 0, Math.PI * 2);
+  ctx.fillStyle = pg; ctx.fill();
+
+  // Particle core
+  ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2);
+  ctx.fillStyle = '#00D4FF'; ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+
+  // Velocity vector
+  if (sim.omega > 0.05) {
+    const vLen = Math.min(sim.omega * 20, 50);
+    const tang = sim.angle + Math.PI / 2;
+    const vx2 = px + vLen * Math.cos(tang);
+    const vy2 = py + vLen * Math.sin(tang);
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(vx2, vy2);
+    ctx.strokeStyle = 'rgba(255,184,0,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
+    // arrowhead
+    ctx.beginPath();
+    ctx.moveTo(vx2, vy2);
+    ctx.lineTo(vx2 - 6 * Math.cos(tang - 0.4), vy2 - 6 * Math.sin(tang - 0.4));
+    ctx.lineTo(vx2 - 6 * Math.cos(tang + 0.4), vy2 - 6 * Math.sin(tang + 0.4));
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255,184,0,0.8)'; ctx.fill();
+  }
+
+  // Centripetal arrow (toward center)
+  if (sim.omega > 0.1) {
+    const cpLen = Math.min(sim.omega * 15, 35);
+    const towardsX = CX - px, towardsY = CY - py;
+    const dist2 = Math.sqrt(towardsX * towardsX + towardsY * towardsY);
+    const cx2n = px + (towardsX / dist2) * cpLen;
+    const cy2n = py + (towardsY / dist2) * cpLen;
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(cx2n, cy2n);
+    ctx.strokeStyle = 'rgba(0,255,160,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+  }
+
+  // Center label
+  ctx.fillStyle = 'rgba(0,212,255,0.15)';
+  ctx.font = `10px 'Share Tech Mono'`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('UAGRM · 6 ETAPAS', CX, CY - 8);
+  ctx.fillText('ACELERADOR CIRCULAR', CX, CY + 8);
+}
+
+function updateReadout() {
+  const v = sim.omega * RADIUS;
+  const ek = 0.5 * PARTICLE_MASS * v * v * 1000; // mJ
+  const { idx } = getNearestCoil(sim.angle);
+  const eta = voltage > 0 ? Math.min(99, (ek / (0.5 * 4700e-6 * voltage * voltage * 1000)) * 100).toFixed(1) : '—';
+
+  document.getElementById('rd-vel').textContent = v.toFixed(2) + ' m/s';
+  document.getElementById('rd-coil').textContent = sim.lastCoil >= 0 ? 'Bobina ' + (sim.lastCoil + 1) : '—';
+  document.getElementById('rd-angle').textContent = ((((sim.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) * 180 / Math.PI).toFixed(1) + '°';
+  document.getElementById('rd-ek').textContent = ek.toFixed(2) + ' mJ';
+  document.getElementById('rd-laps').textContent = sim.laps;
+  document.getElementById('rd-eff').textContent = eta + '%';
+}
+
+let lastTime = null;
+
+function loop(ts) {
+  if (!sim.running) return;
+  if (lastTime === null) lastTime = ts;
+  const dt = Math.min((ts - lastTime) / 1000, 0.05);
+  lastTime = ts;
+  update(dt);
+  drawFrame();
+  animId = requestAnimationFrame(loop);
+}
+
+function toggleSim() {
+  sim.running = !sim.running;
+  const btn = document.getElementById('simToggle');
+  if (sim.running) {
+    btn.textContent = '⏸ PAUSAR';
+    btn.classList.add('active');
+    lastTime = null;
+    animId = requestAnimationFrame(loop);
+  } else {
+    btn.textContent = '▶ CONTINUAR';
+    btn.classList.remove('active');
+    if (animId) cancelAnimationFrame(animId);
+  }
+}
+
+function resetSim() {
+  sim.running = false;
+  if (animId) cancelAnimationFrame(animId);
+  sim.angle = -Math.PI / 2;
+  sim.omega = 0;
+  sim.trail = [];
+  sim.laps = 0;
+  sim.coilFlash = new Array(NUM_COILS).fill(0);
+  sim.lastCoil = -1;
+  sim.lastLapAngle = -Math.PI / 2;
+  lastTime = null;
+  const btn = document.getElementById('simToggle');
+  btn.textContent = '▶ INICIAR SIMULACIÓN';
+  btn.classList.remove('active');
+  document.querySelectorAll('.coil-led').forEach(l => l.classList.remove('active'));
+  drawFrame();
+  updateReadout();
+}
+
+// Initial render
+drawFrame();
+updateReadout();
+
+
+/* ══════════════════════════════════════
+   SCROLL REVEAL
+══════════════════════════════════════ */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.law-card, .eq-card, .simulator-section').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(30px)';
+  el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>

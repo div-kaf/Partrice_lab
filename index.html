@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acelerador Electromagnético de Partículas — UAGRM 2025</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #03080f;
+    --surface: #060d18;
+    --steel: #0d1f35;
+    --cyan: #00d4ff;
+    --cyan-dim: rgba(0,212,255,0.15);
+    --amber: #ffb800;
+    --amber-dim: rgba(255,184,0,0.12);
+    --white: #e8f4ff;
+    --muted: #4a6580;
+    --danger: #ff3c3c;
+    --green: #00ff88;
+    --border: rgba(0,212,255,0.12);
+    --border-mid: rgba(0,212,255,0.25);
+    --glow-cyan: 0 0 20px rgba(0,212,255,0.4);
+    --glow-amber: 0 0 20px rgba(255,184,0,0.4);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 2px; }
+
+  /* ─── NAVBAR ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    height: 58px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px;
+    background: rgba(3,8,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 13px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--cyan);
+  }
+
+  .nav-logo-mark {
+    width: 28px; height: 28px;
+    border: 1.5px solid var(--cyan);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .nav-logo-mark::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: var(--cyan);
+    border-radius: 50%;
+    box-shadow: var(--glow-cyan);
+    animation: pulse-core 2s ease-in-out infinite;
+  }
+  @keyframes pulse-core {
+    0%,100%{transform:scale(1);opacity:1}
+    50%{transform:scale(1.5);opacity:0.5}
+  }
+
+  .nav-links {
+    display: flex; gap: 2px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    display: block;
+    padding: 6px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    border: 0.5px solid transparent;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  .nav-links a::before {
+    content: attr(data-index);
+    position: absolute; top: 3px; left: 4px;
+    font-size: 7px; color: var(--cyan); opacity: 0.5;
+  }
+  .nav-links a:hover {
+    color: var(--cyan);
+    border-color: var(--border-mid);
+    background: var(--cyan-dim);
+  }
+
+  .nav-status {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 9px; letter-spacing: 0.12em; color: var(--muted);
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: blink 1.8s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%,100%{opacity:1} 50%{opacity:0.3}
+  }
+
+  /* ─── HERO SECTION ─── */
+  #hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    padding-top: 58px;
+    overflow: hidden;
+  }
+
+  /* Background grid */
+  #hero::before {
+    content: '';
+    position: absolute; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+  }
+
+  /* Diagonal separator */
+  #hero::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: linear-gradient(to bottom,
+      transparent 0%,
+      rgba(0,212,255,0.3) 20%,
+      rgba(0,212,255,0.6) 50%,
+      rgba(0,212,255,0.3) 80%,
+      transparent 100%);
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  /* ─── LEFT PANEL ─── */
+  .hero-left {
+    position: relative; z-index: 10;
+    display: flex; flex-direction: column;
+    justify-content: center;
+    padding: 60px 50px 60px 60px;
+  }
+
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 24px;
+    animation: fadeSlideIn 0.8s ease both;
+  }
+  .hero-tag::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--amber);
+    box-shadow: var(--glow-amber);
+  }
+  .hero-tag-badge {
+    padding: 3px 10px;
+    border: 0.5px solid var(--amber);
+    border-radius: 2px;
+    background: var(--amber-dim);
+    color: var(--amber);
+  }
+
+  .hero-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    animation: fadeSlideIn 0.8s ease 0.1s both;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(44px, 5.5vw, 78px);
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+    color: var(--white);
+    margin-bottom: 28px;
+    animation: fadeSlideIn 0.8s ease 0.2s both;
+  }
+  .hero-title .highlight {
+    color: var(--cyan);
+    text-shadow: 0 0 40px rgba(0,212,255,0.5), 0 0 80px rgba(0,212,255,0.2);
+    display: block;
+  }
+  .hero-title .highlight-amber {
+    color: var(--amber);
+    text-shadow: 0 0 40px rgba(255,184,0,0.4);
+  }
+
+  .hero-desc {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px; font-weight: 300;
+    line-height: 1.7;
+    color: rgba(232,244,255,0.6);
+    max-width: 420px;
+    margin-bottom: 40px;
+    border-left: 2px solid var(--border-mid);
+    padding-left: 16px;
+    animation: fadeSlideIn 0.8s ease 0.3s both;
+  }
+
+  /* ─── METRIC CHIPS ─── */
+  .metrics {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 44px;
+    animation: fadeSlideIn 0.8s ease 0.4s both;
+  }
+  .metric {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    min-width: 100px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .metric:hover { border-color: var(--cyan); }
+  .metric::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .metric:hover::before { opacity: 1; }
+  .metric-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px; letter-spacing: 0.05em;
+    color: var(--cyan);
+    line-height: 1;
+  }
+  .metric-val.amber { color: var(--amber); }
+  .metric-val.green { color: var(--green); }
+  .metric-unit {
+    font-size: 9px; letter-spacing: 0.1em; color: var(--muted);
+    text-transform: uppercase; margin-top: 4px;
+  }
+
+  /* ─── CTA BUTTONS ─── */
+  .cta-row {
+    display: flex; gap: 12px;
+    animation: fadeSlideIn 0.8s ease 0.5s both;
+  }
+  .btn-primary {
+    padding: 13px 28px;
+    background: var(--cyan);
+    color: var(--bg);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; font-weight: 500;
+    border: none; border-radius: 3px;
+    cursor: crosshair;
+    transition: all 0.2s;
+    box-shadow: 0 0 30px rgba(0,212,255,0.3);
+    text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary:hover {
+    background: #20e0ff;
+    box-shadow: 0 0 50px rgba(0,212,255,0.6);
+    transform: translateY(-1px);
+  }
+  .btn-secondary {
+    padding: 13px 28px;
+    background: transparent;
+    color: var(--cyan);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: 0.5px solid var(--border-mid);
+    border-radius: 3px;
+    cursor: crosshair;
+    transition: all 0.2s;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-secondary:hover {
+    background: var(--cyan-dim);
+    border-color: var(--cyan);
+  }
+
+  /* ─── HUD PANEL LEFT BOTTOM ─── */
+  .hud-bottom {
+    position: absolute; bottom: 28px; left: 60px;
+    display: flex; align-items: center; gap: 20px;
+    animation: fadeSlideIn 0.8s ease 0.6s both;
+  }
+  .hud-field {
+    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .hud-field span { color: var(--muted); display: block; margin-bottom: 3px; }
+  .hud-field strong { color: var(--green); font-weight: 400; }
+  .hud-sep { width: 1px; height: 30px; background: var(--border); }
+
+  /* ─── RIGHT PANEL / CANVAS ─── */
+  .hero-right {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  #particle-canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+  }
+
+  /* ─── HUD OVERLAYS (RIGHT) ─── */
+  .hud-overlay {
+    position: absolute; z-index: 20; pointer-events: none;
+  }
+
+  /* Top-right data block */
+  .hud-tr {
+    top: 80px; right: 20px;
+    background: rgba(3,8,15,0.75);
+    border: 0.5px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    min-width: 160px;
+  }
+  .hud-tr-title {
+    font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--cyan); margin-bottom: 10px;
+    border-bottom: 0.5px solid var(--border); padding-bottom: 6px;
+  }
+  .hud-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 6px;
+  }
+  .hud-row:last-child { margin-bottom: 0; }
+  .hud-key { font-size: 8px; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; }
+  .hud-val { font-size: 11px; font-weight: 500; color: var(--white); font-family: 'IBM Plex Mono', monospace; }
+  .hud-val.c { color: var(--cyan); }
+  .hud-val.a { color: var(--amber); }
+  .hud-val.g { color: var(--green); }
+  .hud-val.r { color: var(--danger); }
+
+  /* Bottom-right corner HUD */
+  .hud-br {
+    bottom: 28px; right: 20px;
+    text-align: right;
+  }
+  .hud-br-label {
+    font-size: 8px; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .hud-br-val {
+    font-family: 'Bebas Neue', sans-serif; font-size: 32px;
+    color: var(--amber); letter-spacing: 0.05em;
+    text-shadow: var(--glow-amber);
+  }
+  .hud-br-unit {
+    font-size: 9px; color: var(--muted); letter-spacing: 0.1em;
+  }
+
+  /* Top-left mini HUD on canvas */
+  .hud-tl {
+    top: 80px; left: 20px;
+  }
+  .hud-crosshair {
+    width: 50px; height: 50px;
+    border: 1px solid rgba(0,212,255,0.3);
+    border-radius: 50%;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hud-crosshair::before,
+  .hud-crosshair::after {
+    content: ''; position: absolute;
+    background: rgba(0,212,255,0.3);
+  }
+  .hud-crosshair::before { width: 1px; height: 100%; }
+  .hud-crosshair::after { width: 100%; height: 1px; }
+  .hud-crosshair-inner {
+    width: 6px; height: 6px;
+    border: 1px solid var(--cyan);
+    border-radius: 50%;
+    z-index: 1;
+    animation: pulse-core 1.5s ease-in-out infinite;
+  }
+  .hud-crosshair-label {
+    font-size: 8px; letter-spacing: 0.12em; color: var(--muted);
+    text-transform: uppercase; margin-top: 6px; text-align: center;
+  }
+
+  /* Energy bar */
+  .hud-energy {
+    bottom: 28px; left: 20px;
+    width: 140px;
+  }
+  .energy-label {
+    font-size: 8px; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase;
+    margin-bottom: 6px;
+    display: flex; justify-content: space-between;
+  }
+  .energy-label span { color: var(--cyan); }
+  .energy-bar-bg {
+    height: 3px; background: rgba(0,212,255,0.1);
+    border-radius: 2px; overflow: hidden;
+  }
+  .energy-bar-fill {
+    height: 100%; background: linear-gradient(90deg, var(--cyan), #80ffff);
+    border-radius: 2px;
+    animation: energyPulse 3s ease-in-out infinite;
+  }
+  @keyframes energyPulse {
+    0%,100%{width:72%;box-shadow:0 0 6px var(--cyan)}
+    50%{width:95%;box-shadow:0 0 12px var(--cyan)}
+  }
+  .energy-bars { display: flex; flex-direction: column; gap: 3px; }
+  .energy-bar-row { display: flex; gap: 2px; margin-top: 6px; }
+  .energy-seg {
+    flex: 1; height: 6px; border-radius: 1px;
+    background: var(--cyan);
+    opacity: 0.2;
+    animation: segBlink 2s ease-in-out infinite;
+  }
+  .energy-seg.on { opacity: 0.9; }
+  @keyframes segBlink {
+    0%,100%{opacity:0.9} 50%{opacity:0.4}
+  }
+
+  /* Scanning line effect */
+  .scan-line {
+    position: absolute; inset: 0; z-index: 15; pointer-events: none;
+    overflow: hidden;
+  }
+  .scan-line::before {
+    content: '';
+    position: absolute; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.4), transparent);
+    animation: scanMove 4s linear infinite;
+    box-shadow: 0 0 8px rgba(0,212,255,0.2);
+  }
+  @keyframes scanMove {
+    0%{top:-1px} 100%{top:100%}
+  }
+
+  /* Corner marks */
+  .corner-marks {
+    position: absolute; inset: 12px; pointer-events: none; z-index: 6;
+  }
+  .corner-marks::before, .corner-marks::after,
+  .corner-marks span::before, .corner-marks span::after {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    border-color: rgba(0,212,255,0.4); border-style: solid;
+  }
+  .corner-marks::before { top:0;left:0; border-width:1px 0 0 1px; }
+  .corner-marks::after { top:0;right:0; border-width:1px 1px 0 0; }
+  .corner-marks span::before { bottom:0;left:0; border-width:0 0 1px 1px; }
+  .corner-marks span::after { bottom:0;right:0; border-width:0 1px 1px 0; }
+
+  /* ─── LIVE READOUT TICKER ─── */
+  .ticker {
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 50;
+    height: 28px;
+    background: rgba(0,212,255,0.06);
+    border-top: 0.5px solid var(--border);
+    display: flex; align-items: center;
+    overflow: hidden;
+  }
+  .ticker-label {
+    background: var(--cyan);
+    color: var(--bg);
+    padding: 0 14px; height: 100%;
+    display: flex; align-items: center;
+    font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
+    font-weight: 500; white-space: nowrap; flex-shrink: 0;
+  }
+  .ticker-content {
+    display: flex; animation: tickerScroll 30s linear infinite;
+    white-space: nowrap; font-size: 9px; letter-spacing: 0.1em;
+    color: var(--muted); padding-left: 30px;
+  }
+  .ticker-item {
+    margin-right: 60px;
+  }
+  .ticker-item em { color: var(--cyan); font-style: normal; }
+  @keyframes tickerScroll {
+    0%{transform:translateX(0)} 100%{transform:translateX(-50%)}
+  }
+
+  /* ─── SECTION STUBS ─── */
+  .section-stub {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 80px 60px;
+    border-top: 0.5px solid var(--border);
+    position: relative;
+  }
+  .section-stub::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+  .section-id {
+    font-size: 9px; letter-spacing: 0.2em; color: var(--cyan); text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px; color: var(--white); letter-spacing: 0.04em;
+    text-align: center;
+  }
+  .section-coming {
+    font-size: 11px; color: var(--muted); letter-spacing: 0.1em;
+    margin-top: 16px; text-transform: uppercase;
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    #hero { grid-template-columns: 1fr; grid-template-rows: auto 50vh; }
+    #hero::after { display: none; }
+    .hero-left { padding: 40px 24px 30px; }
+    .hero-title { font-size: 42px; }
+    nav { padding: 0 20px; }
+    .nav-links { display: none; }
+    .hud-bottom { left: 24px; }
+    .hud-tr { right: 10px; top: 10px; }
+    .hud-br { bottom: 10px; right: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ NAVBAR ═══════════════════════════════════════ -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-mark"><span class="nav-logo-mark-core"></span></div>
+    AEP · UAGRM
+  </div>
+
+  <ul class="nav-links">
+    <li><a href="fundamentos.html" data-index="01">Fundamentos</a></li>
+    <li><a href="hardware.html" data-index="02">Hardware</a></li>
+    <li><a href="fisica.html" data-index="03">Física</a></li>
+    <li><a href="prototipo.html" data-index="04">Prototipo</a></li>
+    <li><a href="resultados.html" data-index="06">Resultados</a></li>
+  </ul>
+
+  <div class="nav-status">
+    <div class="status-dot"></div>
+    SISTEMA ACTIVO
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════ HERO ═══════════════════════════════════════ -->
+<section id="hero">
+
+  <!-- Background grid via CSS -->
+
+  <!-- ── LEFT PANEL ── -->
+  <div class="hero-left">
+
+    <div class="hero-tag">
+      <span class="hero-tag-badge">⚡ PROYECTO FINAL · FÍSICA I</span>
+    </div>
+
+    <div class="hero-eyebrow">UAGRM · 2025 · Ingeniería en Sistemas</div>
+
+    <h1 class="hero-title">
+      <span>Acelerador</span>
+      <span class="highlight">Electro&shy;magnético</span>
+      <span>de <span class="highlight-amber">Partículas</span></span>
+    </h1>
+
+    <p class="hero-desc">
+      Un prototipo funcional que desafía los límites del electromagnetismo mediante la aceleración secuencial de partículas metálicas impulsadas por campos magnéticos controlados de alta precisión.
+    </p>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-val">12.4</div>
+        <div class="metric-unit">Tesla · Campo B</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val amber">847</div>
+        <div class="metric-unit">MeV · Energía</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val green">0.97c</div>
+        <div class="metric-unit">Velocidad</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val" style="font-size:22px">4</div>
+        <div class="metric-unit">Estaciones magnéticas</div>
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <a href="#fundamentos" class="btn-primary">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 5h8M5 1l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Ver Fundamentos
+      </a>
+      <a href="#prototipo" class="btn-secondary">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1"/><path d="M5 3v4M3 5h4" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+        Ver Prototipo
+      </a>
+    </div>
+
+    <div class="hud-bottom">
+      <div class="hud-field">
+        <span>Sesión</span>
+        <strong id="hud-session">AEP-2025-0047</strong>
+      </div>
+      <div class="hud-sep"></div>
+      <div class="hud-field">
+        <span>Estado</span>
+        <strong>SIMULANDO</strong>
+      </div>
+      <div class="hud-sep"></div>
+      <div class="hud-field">
+        <span>Colisiones</span>
+        <strong id="hud-collisions">0</strong>
+      </div>
+    </div>
+
+  </div><!-- /hero-left -->
+
+  <!-- ── RIGHT PANEL (CANVAS) ── -->
+  <div class="hero-right">
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Scanning line -->
+    <div class="scan-line"></div>
+
+    <!-- Corner marks -->
+    <div class="corner-marks"><span></span></div>
+
+    <!-- HUD: top-right data block -->
+    <div class="hud-overlay hud-tr">
+      <div class="hud-tr-title">Monitor de Partículas</div>
+      <div class="hud-row">
+        <span class="hud-key">Energía cinética</span>
+        <span class="hud-val c" id="hud-energy">847 MeV</span>
+      </div>
+      <div class="hud-row">
+        <span class="hud-key">Partículas activas</span>
+        <span class="hud-val" id="hud-count">—</span>
+      </div>
+      <div class="hud-row">
+        <span class="hud-key">Temperatura</span>
+        <span class="hud-val a">2.7 K</span>
+      </div>
+      <div class="hud-row">
+        <span class="hud-key">Presión</span>
+        <span class="hud-val g">10⁻¹⁰ Pa</span>
+      </div>
+      <div class="hud-row">
+        <span class="hud-key">Estado colisionador</span>
+        <span class="hud-val r" id="hud-status">ACTIVO</span>
+      </div>
+    </div>
+
+    <!-- HUD: top-left crosshair -->
+    <div class="hud-overlay hud-tl">
+      <div class="hud-crosshair">
+        <div class="hud-crosshair-inner"></div>
+      </div>
+      <div class="hud-crosshair-label">Centro de<br>colisión</div>
+    </div>
+
+    <!-- HUD: bottom-right energy readout -->
+    <div class="hud-overlay hud-br">
+      <div class="hud-br-label">Voltaje de aceleración</div>
+      <div class="hud-br-val" id="hud-voltage">450</div>
+      <div class="hud-br-unit">kV · Diferencial</div>
+    </div>
+
+    <!-- HUD: bottom-left energy bars -->
+    <div class="hud-overlay hud-energy">
+      <div class="energy-label">Potencia <span id="hud-power">72%</span></div>
+      <div class="energy-bar-bg"><div class="energy-bar-fill"></div></div>
+      <div class="energy-bar-row" id="energy-segs"></div>
+    </div>
+
+  </div><!-- /hero-right -->
+
+  <!-- Live ticker -->
+  <div class="ticker">
+    <div class="ticker-label">⚡ DATOS EN VIVO</div>
+    <div class="ticker-content" id="ticker-content">
+      <span class="ticker-item">Campo magnético: <em>12.4 T</em></span>
+      <span class="ticker-item">Velocidad: <em>0.97c</em></span>
+      <span class="ticker-item">Energía cinética: <em>847 MeV</em></span>
+      <span class="ticker-item">Temperatura del solenoide: <em>2.7 K</em></span>
+      <span class="ticker-item">Presión del túnel: <em>10⁻¹⁰ Pa</em></span>
+      <span class="ticker-item">Estaciones activas: <em>4/4</em></span>
+      <span class="ticker-item">Ciclos completados: <em id="ticker-cycles">0</em></span>
+      <span class="ticker-item">Luminosidad: <em>10³⁴ cm⁻²s⁻¹</em></span>
+      <span class="ticker-item">Sección eficaz: <em>∼100 mb</em></span>
+      <span class="ticker-item">Campo magnético: <em>12.4 T</em></span>
+      <span class="ticker-item">Velocidad: <em>0.97c</em></span>
+      <span class="ticker-item">Energía cinética: <em>847 MeV</em></span>
+      <span class="ticker-item">Temperatura del solenoide: <em>2.7 K</em></span>
+      <span class="ticker-item">Presión del túnel: <em>10⁻¹⁰ Pa</em></span>
+      <span class="ticker-item">Estaciones activas: <em>4/4</em></span>
+      <span class="ticker-item">Ciclos completados: <em>0</em></span>
+      <span class="ticker-item">Luminosidad: <em>10³⁴ cm⁻²s⁻¹</em></span>
+      <span class="ticker-item">Sección eficaz: <em>∼100 mb</em></span>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════ SECTION STUBS ═══════════════════════════ -->
+<section class="section-stub" id="fundamentos">
+  <div class="section-id">01 · Sección</div>
+  <div class="section-title">Fundamentos Teóricos</div>
+  <div class="section-coming">Contenido en construcción · Desplaza hacia arriba para volver al inicio</div>
+</section>
+<section class="section-stub" id="hardware">
+  <div class="section-id">02 · Sección</div>
+  <div class="section-title">Hardware del Sistema</div>
+  <div class="section-coming">Contenido en construcción</div>
+</section>
+<section class="section-stub" id="fisica">
+  <div class="section-id">03 · Sección</div>
+  <div class="section-title">Física Aplicada</div>
+  <div class="section-coming">Contenido en construcción</div>
+</section>
+<section class="section-stub" id="prototipo">
+  <div class="section-id">04 · Sección</div>
+  <div class="section-title">Prototipo</div>
+  <div class="section-coming">Contenido en construcción</div>
+</section>
+<section class="section-stub" id="equipo">
+  <div class="section-id">05 · Sección</div>
+  <div class="section-title">Equipo de Investigación</div>
+  <div class="section-coming">Contenido en construcción</div>
+</section>
+<section class="section-stub" id="resultados">
+  <div class="section-id">06 · Sección</div>
+  <div class="section-title">Resultados</div>
+  <div class="section-coming">Contenido en construcción</div>
+</section>
+
+<!-- ═══════════════════════════ PARTICLE ENGINE ═══════════════════════════ -->
+<script>
+(function() {
+  'use strict';
+
+  const canvas = document.getElementById('particle-canvas');
+  const ctx = canvas.getContext('2d');
+
+  // ── State ──
+  let W, H, cx, cy, raf;
+  let mouse = { x: 0, y: 0 };
+  let scroll = 0;
+  let collisionCount = 0;
+  let cycles = 0;
+  let particles = [];
+  let beamParticles = [];
+  let shockwaves = [];
+  let debris = [];
+  let t = 0;
+
+  // ── Resize ──
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    W = canvas.width = rect.width * window.devicePixelRatio;
+    H = canvas.height = rect.height * window.devicePixelRatio;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    cx = W / 2; cy = H / 2;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Mouse tracking (relative to canvas)
+  canvas.parentElement.addEventListener('mousemove', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = (e.clientX - rect.left) * window.devicePixelRatio;
+    mouse.y = (e.clientY - rect.top) * window.devicePixelRatio;
+  });
+  window.addEventListener('scroll', function() {
+    scroll = window.scrollY;
+  });
+
+  // ── Color palette ──
+  const C = {
+    cyan: '#00d4ff',
+    amber: '#ffb800',
+    white: '#e8f4ff',
+    green: '#00ff88',
+    danger: '#ff3c3c',
+    purple: '#a855f7',
+    pink: '#ff55aa',
+  };
+
+  // ── Utility ──
+  function rand(a, b) { return a + Math.random() * (b - a); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function dist(ax, ay, bx, by) { return Math.hypot(bx - ax, by - ay); }
+
+  // ── Circular particle ring ──
+  const RING_RADIUS = Math.min(W, H) * 0.28;
+
+  // ── Beam particles orbiting the ring ──
+  function createBeamParticle(offset) {
+    return {
+      angle: rand(0, Math.PI * 2),
+      speed: rand(0.018, 0.026),
+      r: RING_RADIUS,
+      size: rand(2, 5),
+      color: Math.random() > 0.5 ? C.cyan : C.amber,
+      trail: [],
+      energy: rand(0.5, 1),
+      clockwise: Math.random() > 0.5 ? 1 : -1,
+      wobble: rand(0, Math.PI * 2),
+      wobbleSpeed: rand(0.02, 0.06),
+      wobbleAmp: rand(4, 12) * window.devicePixelRatio,
+      life: 1,
+    };
+  }
+
+  for (let i = 0; i < 28; i++) {
+    beamParticles.push(createBeamParticle(i));
+  }
+
+  // ── Background atmosphere particles (ambient) ──
+  function createAmbient() {
+    return {
+      x: rand(0, W), y: rand(0, H),
+      vx: rand(-0.3, 0.3), vy: rand(-0.3, 0.3),
+      size: rand(0.5, 2) * window.devicePixelRatio,
+      alpha: rand(0.05, 0.3),
+      color: Math.random() > 0.7 ? C.cyan : (Math.random() > 0.5 ? C.amber : '#ffffff'),
+    };
+  }
+  for (let i = 0; i < 80; i++) particles.push(createAmbient());
+
+  // ── Shockwave ──
+  function createShockwave(x, y, color) {
+    shockwaves.push({ x, y, r: 2, maxR: rand(80, 160) * window.devicePixelRatio, alpha: 1, color, speed: rand(3, 6) });
+  }
+
+  // ── Debris on collision ──
+  function createDebris(x, y, count) {
+    for (let i = 0; i < count; i++) {
+      const angle = rand(0, Math.PI * 2);
+      const spd = rand(2, 12);
+      debris.push({
+        x, y,
+        vx: Math.cos(angle) * spd,
+        vy: Math.sin(angle) * spd,
+        size: rand(1, 4) * window.devicePixelRatio,
+        alpha: 1,
+        decay: rand(0.01, 0.03),
+        color: [C.cyan, C.amber, C.white, C.green, C.purple, C.pink][Math.floor(rand(0,6))],
+        gravity: rand(0.05, 0.15),
+        trail: [],
+      });
+    }
+  }
+
+  // ── HUD live update ──
+  function updateHUD() {
+    const energyVals = [721, 784, 820, 847, 863, 891, 912];
+    const voltageVals = [380, 410, 440, 450, 470, 495, 512];
+    const powers = [64, 68, 72, 76, 80, 85, 91, 95];
+    const idx = Math.floor(t / 180) % energyVals.length;
+
+    const eEl = document.getElementById('hud-energy');
+    const vEl = document.getElementById('hud-voltage');
+    const pEl = document.getElementById('hud-power');
+    const cEl = document.getElementById('hud-count');
+    const colEl = document.getElementById('hud-collisions');
+    const cyclesEl = document.getElementById('ticker-cycles');
+
+    if (eEl) eEl.textContent = energyVals[idx] + ' MeV';
+    if (vEl) vEl.textContent = voltageVals[idx];
+    if (pEl) pEl.textContent = powers[Math.floor(t/120) % powers.length] + '%';
+    if (cEl) cEl.textContent = beamParticles.length;
+    if (colEl) colEl.textContent = collisionCount;
+    if (cyclesEl) cyclesEl.textContent = cycles;
+
+    // Energy segments
+    const segs = document.getElementById('energy-segs');
+    if (segs && segs.children.length === 0) {
+      for (let i = 0; i < 12; i++) {
+        const s = document.createElement('div');
+        s.className = 'energy-seg' + (i < 9 ? ' on' : '');
+        s.style.animationDelay = (i * 0.15) + 's';
+        segs.appendChild(s);
+      }
+    }
+  }
+
+  // ── Draw ring / accelerator tube ──
+  function drawAcceleratorRing(bx, by) {
+    const rr = RING_RADIUS;
+    // Outer glow ring
+    for (let g = 3; g >= 1; g--) {
+      ctx.beginPath();
+      ctx.arc(bx, by, rr + g * 8 * window.devicePixelRatio, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(0,212,255,${0.04 / g})`;
+      ctx.lineWidth = g * 6 * window.devicePixelRatio;
+      ctx.stroke();
+    }
+    // Main tube
+    ctx.beginPath();
+    ctx.arc(bx, by, rr, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,212,255,0.15)';
+    ctx.lineWidth = 2 * window.devicePixelRatio;
+    ctx.stroke();
+
+    // Dashed inner guide
+    ctx.save();
+    ctx.setLineDash([6 * window.devicePixelRatio, 12 * window.devicePixelRatio]);
+    ctx.beginPath();
+    ctx.arc(bx, by, rr - 14 * window.devicePixelRatio, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,212,255,0.06)';
+    ctx.lineWidth = 1 * window.devicePixelRatio;
+    ctx.stroke();
+    ctx.restore();
+
+    // 4 magnet stations
+    for (let i = 0; i < 4; i++) {
+      const ang = (i / 4) * Math.PI * 2 - Math.PI / 4;
+      const mx = bx + Math.cos(ang) * rr;
+      const my = by + Math.sin(ang) * rr;
+      const pulse = 0.6 + 0.4 * Math.sin(t * 0.05 + i * 1.5);
+
+      ctx.save();
+      ctx.translate(mx, my);
+      ctx.rotate(ang);
+      // Station body
+      const sw = 24 * window.devicePixelRatio;
+      const sh = 10 * window.devicePixelRatio;
+      ctx.fillStyle = `rgba(0,212,255,${0.1 * pulse})`;
+      ctx.strokeStyle = `rgba(0,212,255,${0.5 * pulse})`;
+      ctx.lineWidth = 1 * window.devicePixelRatio;
+      ctx.beginPath();
+      ctx.rect(-sw/2, -sh/2, sw, sh);
+      ctx.fill(); ctx.stroke();
+      // Glow dot
+      ctx.beginPath();
+      ctx.arc(0, 0, 3 * window.devicePixelRatio, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(0,212,255,${pulse})`;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Center target
+    for (let r = 3; r >= 1; r--) {
+      ctx.beginPath();
+      ctx.arc(bx, by, r * 12 * window.devicePixelRatio, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(0,212,255,${0.08 / r})`;
+      ctx.lineWidth = 1.5 * window.devicePixelRatio;
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.arc(bx, by, 4 * window.devicePixelRatio, 0, Math.PI * 2);
+    ctx.fillStyle = C.cyan;
+    ctx.fill();
+  }
+
+  // ── Draw grid / HUD overlay ──
+  function drawHUDGrid(bx, by) {
+    const dpr = window.devicePixelRatio;
+    // Cross-hairs through center
+    ctx.save();
+    ctx.setLineDash([4 * dpr, 8 * dpr]);
+    ctx.strokeStyle = 'rgba(0,212,255,0.07)';
+    ctx.lineWidth = 0.5 * dpr;
+    ctx.beginPath(); ctx.moveTo(bx, 0); ctx.lineTo(bx, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, by); ctx.lineTo(W, by); ctx.stroke();
+    ctx.restore();
+
+    // Concentric measurement rings
+    [0.15, 0.3, 0.45].forEach(function(f) {
+      ctx.beginPath();
+      ctx.arc(bx, by, RING_RADIUS * f, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(0,212,255,0.04)';
+      ctx.lineWidth = 0.5 * dpr;
+      ctx.stroke();
+    });
+  }
+
+  // ── Mouse influence field ──
+  function getMouseInfluence(px, py) {
+    const dx = mouse.x - px, dy = mouse.y - py;
+    const d = Math.hypot(dx, dy);
+    const maxD = 200 * window.devicePixelRatio;
+    if (d > maxD) return { fx: 0, fy: 0 };
+    const strength = (1 - d / maxD) * 0.8;
+    return { fx: (dx / d) * strength, fy: (dy / d) * strength };
+  }
+
+  // ── Collision detection between beam particles ──
+  let collisionTimer = 0;
+  function checkCollisions(bx, by) {
+    collisionTimer++;
+    if (collisionTimer < 60) return;
+    collisionTimer = 0;
+
+    for (let i = 0; i < beamParticles.length; i++) {
+      const a = beamParticles[i];
+      for (let j = i + 1; j < beamParticles.length; j++) {
+        const b = beamParticles[j];
+        if (a.clockwise === b.clockwise) continue; // Only opposite beams collide
+        const ax = bx + Math.cos(a.angle) * a.r;
+        const ay = by + Math.sin(a.angle) * a.r;
+        const bbx = bx + Math.cos(b.angle) * b.r;
+        const bby = by + Math.sin(b.angle) * b.r;
+        const d = dist(ax, ay, bbx, bby);
+        if (d < 30 * window.devicePixelRatio) {
+          const mx = (ax + bbx) / 2, my = (ay + bby) / 2;
+          createShockwave(mx, my, Math.random() > 0.5 ? C.cyan : C.amber);
+          createShockwave(mx, my, '#ffffff');
+          createDebris(mx, my, 20);
+          collisionCount++;
+          if (collisionCount % 8 === 0) cycles++;
+          // Flash HUD status
+          const st = document.getElementById('hud-status');
+          if (st) { st.textContent = 'COLISIÓN'; setTimeout(function(){ if(st) st.textContent = 'ACTIVO'; }, 400); }
+        }
+      }
+    }
+  }
+
+  // ── Main draw loop ──
+  function draw() {
+    t++;
+    const dpr = window.devicePixelRatio;
+
+    // Canvas center (with subtle scroll parallax)
+    const bx = cx;
+    const by = cy - scroll * 0.05 * dpr;
+
+    // Clear
+    ctx.clearRect(0, 0, W, H);
+
+    // Background fill
+    ctx.fillStyle = '#03080f';
+    ctx.fillRect(0, 0, W, H);
+
+    // Radial vignette
+    const vg = ctx.createRadialGradient(bx, by, 0, bx, by, Math.min(W,H) * 0.65);
+    vg.addColorStop(0, 'rgba(0,30,60,0.0)');
+    vg.addColorStop(1, 'rgba(3,8,15,0.85)');
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Deep glow at center
+    const glow = ctx.createRadialGradient(bx, by, 0, bx, by, RING_RADIUS * 1.2);
+    glow.addColorStop(0, 'rgba(0,212,255,0.04)');
+    glow.addColorStop(0.5, 'rgba(0,212,255,0.01)');
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+
+    // HUD grid
+    drawHUDGrid(bx, by);
+
+    // Accelerator ring
+    drawAcceleratorRing(bx, by);
+
+    // ── Ambient particles ──
+    particles.forEach(function(p) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.alpha;
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+
+    // ── Beam particles ──
+    beamParticles.forEach(function(p, i) {
+      // Mouse influence
+      const px = bx + Math.cos(p.angle) * p.r;
+      const py = by + Math.sin(p.angle) * p.r;
+      const inf = getMouseInfluence(px, py);
+      const scrollBoost = 1 + scroll * 0.0003;
+
+      p.angle += p.speed * p.clockwise * scrollBoost + inf.fx * 0.002;
+      p.wobble += p.wobbleSpeed;
+
+      const wobbleR = p.r + Math.sin(p.wobble) * p.wobbleAmp;
+      const x = bx + Math.cos(p.angle) * wobbleR;
+      const y = by + Math.sin(p.angle) * wobbleR;
+
+      // Trail
+      p.trail.push({ x, y, a: 1 });
+      if (p.trail.length > 22) p.trail.shift();
+
+      // Draw trail
+      for (let ti = 0; ti < p.trail.length; ti++) {
+        const frac = ti / p.trail.length;
+        const tr = p.trail[ti];
+        ctx.beginPath();
+        ctx.arc(tr.x, tr.y, p.size * frac * 0.7, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = frac * 0.5 * p.energy;
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      // Draw particle with glow
+      const gSize = p.size * 2.5;
+      const pGlow = ctx.createRadialGradient(x, y, 0, x, y, gSize * 3);
+      pGlow.addColorStop(0, p.color);
+      pGlow.addColorStop(0.3, p.color + '80');
+      pGlow.addColorStop(1, 'transparent');
+      ctx.beginPath();
+      ctx.arc(x, y, gSize * 3, 0, Math.PI * 2);
+      ctx.fillStyle = pGlow;
+      ctx.globalAlpha = 0.4 * p.energy;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      ctx.beginPath();
+      ctx.arc(x, y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+    });
+
+    // ── Shockwaves ──
+    shockwaves = shockwaves.filter(function(s) {
+      s.r += s.speed;
+      s.alpha -= 0.022;
+      if (s.alpha <= 0) return false;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = 2 * dpr;
+      ctx.globalAlpha = s.alpha;
+      ctx.stroke();
+      // Inner fill flash
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r * 0.4, 0, Math.PI * 2);
+      const sg = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 0.4);
+      sg.addColorStop(0, s.color + '44');
+      sg.addColorStop(1, 'transparent');
+      ctx.fillStyle = sg;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      return true;
+    });
+
+    // ── Debris ──
+    debris = debris.filter(function(d) {
+      d.x += d.vx; d.y += d.vy;
+      d.vy += d.gravity;
+      d.vx *= 0.98; d.vy *= 0.98;
+      d.alpha -= d.decay;
+      if (d.alpha <= 0) return false;
+      d.trail.push({ x: d.x, y: d.y });
+      if (d.trail.length > 8) d.trail.shift();
+      // Trail
+      for (let ti = 0; ti < d.trail.length - 1; ti++) {
+        ctx.beginPath();
+        ctx.moveTo(d.trail[ti].x, d.trail[ti].y);
+        ctx.lineTo(d.trail[ti+1].x, d.trail[ti+1].y);
+        ctx.strokeStyle = d.color;
+        ctx.lineWidth = d.size * (ti / d.trail.length);
+        ctx.globalAlpha = d.alpha * (ti / d.trail.length);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2);
+      ctx.fillStyle = d.color;
+      ctx.globalAlpha = d.alpha;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      return true;
+    });
+
+    // ── Spontaneous collision at center every ~4 sec ──
+    if (t % 240 === 0) {
+      const jitter = 20 * dpr;
+      createShockwave(bx + rand(-jitter, jitter), by + rand(-jitter, jitter), C.cyan);
+      createShockwave(bx + rand(-jitter, jitter), by + rand(-jitter, jitter), C.amber);
+      createShockwave(bx, by, '#ffffff');
+      createDebris(bx, by, 35);
+      collisionCount++;
+      if (collisionCount % 6 === 0) cycles++;
+    }
+
+    // ── Periodic beam collision check ──
+    checkCollisions(bx, by);
+
+    // ── HUD Update every 90 frames ──
+    if (t % 90 === 0) updateHUD();
+
+    raf = requestAnimationFrame(draw);
+  }
+
+  draw();
+
+})();
+</script>
+
+</body>
+</html>

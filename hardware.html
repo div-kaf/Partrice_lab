@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MÓDULO 2 — ARQUITECTURA DE HARDWARE | UAGRM Acelerador Circular</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════ */
+:root {
+  --void:    #0A0A0F;
+  --void2:   #0D0D18;
+  --void3:   #111128;
+  --cyan:    #00D4FF;
+  --cyan2:   #00A8CC;
+  --cyan3:   #004D66;
+  --gold:    #FFB800;
+  --gold2:   #CC9200;
+  --green:   #00FF9D;
+  --red:     #FF4466;
+  --white:   #E8F4FF;
+  --muted:   #4A5568;
+  --glass:   rgba(0,212,255,0.05);
+  --glass2:  rgba(0,212,255,0.12);
+  --font-display: 'Orbitron', monospace;
+  --font-body:    'Rajdhani', sans-serif;
+  --font-mono:    'Share Tech Mono', monospace;
+}
+
+/* ═══════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--void);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 16px;
+  overflow-x: hidden;
+  cursor: crosshair;
+}
+::selection { background: var(--cyan); color: var(--void); }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--void); }
+::-webkit-scrollbar-thumb { background: var(--cyan3); }
+
+/* ═══════════════════════════════════════════════
+   PARTICLE FIELD CANVAS (background)
+═══════════════════════════════════════════════ */
+#bg-canvas {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0; pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════
+   LAYOUT WRAPPER
+═══════════════════════════════════════════════ */
+.page { position: relative; z-index: 2; }
+
+/* ═══════════════════════════════════════════════
+   HERO / HEADER
+═══════════════════════════════════════════════ */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 60px 24px 40px;
+  position: relative;
+}
+
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 6px;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  animation: fadeSlideDown .8s ease both;
+}
+
+.hero-module-badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--glass2);
+  border: 1px solid var(--cyan3);
+  padding: 8px 20px; border-radius: 2px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--cyan); letter-spacing: 3px;
+  margin-bottom: 32px;
+  animation: fadeSlideDown .8s .1s ease both;
+  backdrop-filter: blur(10px);
+}
+.hero-module-badge .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 6vw, 72px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: 2px;
+  color: var(--white);
+  animation: fadeSlideDown .9s .2s ease both;
+}
+.hero-title .accent { color: var(--cyan); text-shadow: 0 0 40px var(--cyan); }
+.hero-title .gold   { color: var(--gold); text-shadow: 0 0 40px var(--gold); }
+
+.hero-sub {
+  font-size: 14px; color: rgba(232,244,255,.5);
+  letter-spacing: 4px; margin: 16px 0 48px;
+  font-family: var(--font-mono);
+  animation: fadeSlideDown .9s .3s ease both;
+}
+
+/* Ring preview in hero */
+#hero-canvas {
+  width: min(480px, 90vw); height: min(480px, 90vw);
+  animation: fadeSlideDown .9s .4s ease both;
+  cursor: pointer;
+}
+
+.hero-hint {
+  margin-top: 20px;
+  font-family: var(--font-mono); font-size: 10px;
+  color: rgba(0,212,255,.4); letter-spacing: 4px;
+  animation: fadeSlideDown .9s .5s ease both, breathe 3s 2s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100%{opacity:.4} 50%{opacity:.9} }
+
+.scroll-cue {
+  position: absolute; bottom: 30px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  animation: fadeSlideDown .9s .8s ease both;
+}
+.scroll-cue span { font-family: var(--font-mono); font-size: 9px; letter-spacing: 3px; color: var(--muted); }
+.scroll-line {
+  width: 1px; height: 50px;
+  background: linear-gradient(to bottom, var(--cyan), transparent);
+  animation: scroll-anim 2s ease-in-out infinite;
+}
+@keyframes scroll-anim { 0%{height:0;opacity:1} 100%{height:50px;opacity:0} }
+
+/* ═══════════════════════════════════════════════
+   MANIFESTO SECTION
+═══════════════════════════════════════════════ */
+.manifesto-section {
+  padding: 80px 24px;
+  display: flex; align-items: center; justify-content: center;
+}
+.manifesto-box {
+  max-width: 900px; width: 100%;
+  border: 1px solid var(--cyan3);
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  padding: 48px;
+  position: relative;
+  clip-path: polygon(0 0, calc(100% - 30px) 0, 100% 30px, 100% 100%, 30px 100%, 0 calc(100% - 30px));
+}
+.manifesto-box::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), var(--gold), transparent);
+  animation: scanline 4s linear infinite;
+}
+@keyframes scanline { 0%,100%{opacity:.3} 50%{opacity:1} }
+
+.manifesto-label {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 5px; color: var(--gold);
+  margin-bottom: 20px;
+}
+.manifesto-text {
+  font-family: var(--font-display);
+  font-size: clamp(16px, 2.5vw, 26px);
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--white);
+  font-style: italic;
+}
+.manifesto-text em {
+  color: var(--cyan);
+  font-style: normal;
+  text-shadow: 0 0 20px var(--cyan);
+}
+.manifesto-origin {
+  margin-top: 24px;
+  font-family: var(--font-mono); font-size: 10px;
+  color: rgba(232,244,255,.3); letter-spacing: 3px;
+}
+
+/* ═══════════════════════════════════════════════
+   EXPLODED VIEW SECTION
+═══════════════════════════════════════════════ */
+.exploded-section {
+  padding: 60px 24px;
+  max-width: 1400px; margin: 0 auto;
+}
+.section-header {
+  text-align: center; margin-bottom: 60px;
+}
+.section-label {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 6px; color: var(--cyan); margin-bottom: 12px;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 4vw, 48px);
+  font-weight: 900; letter-spacing: 2px;
+}
+.section-title span { color: var(--gold); }
+
+.exploded-arena {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 40px;
+  padding: 40px 0;
+}
+
+/* 3D Canvas for exploded view */
+#exploded-canvas {
+  width: min(700px, 95vw);
+  height: min(700px, 95vw);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.explode-controls {
+  display: flex; flex-direction: column; gap: 12px;
+  min-width: 160px;
+}
+.explode-btn {
+  background: var(--glass);
+  border: 1px solid var(--cyan3);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 2px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all .3s;
+  text-align: left;
+  display: flex; align-items: center; gap: 8px;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+.explode-btn:hover, .explode-btn.active {
+  background: rgba(0,212,255,.2);
+  border-color: var(--cyan);
+  box-shadow: 0 0 20px rgba(0,212,255,.3);
+}
+.explode-btn .btn-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor; flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENT CARDS GRID
+═══════════════════════════════════════════════ */
+.components-section {
+  padding: 80px 24px;
+  max-width: 1300px; margin: 0 auto;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.comp-card {
+  position: relative;
+  background: var(--glass);
+  border: 1px solid rgba(0,212,255,.15);
+  padding: 32px 28px;
+  cursor: pointer;
+  transition: transform .4s ease, border-color .3s;
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+  overflow: hidden;
+}
+.comp-card::before {
+  content: '';
+  position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0,212,255,.05), transparent);
+  transition: left .6s ease;
+}
+.comp-card:hover::before { left: 100%; }
+.comp-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--cyan);
+  box-shadow: 0 0 40px rgba(0,212,255,.15), 0 0 1px var(--cyan);
+}
+.comp-card:hover .scan-line { animation: scan-anim .6s ease; }
+.comp-card:hover .card-glow { opacity: 1; }
+
+.card-glow {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, rgba(0,212,255,.06), transparent 70%);
+  opacity: 0; transition: opacity .4s;
+  pointer-events: none;
+}
+
+.scan-line {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0;
+}
+@keyframes scan-anim { 0%{top:0;opacity:1} 100%{top:100%;opacity:0} }
+
+.card-num {
+  font-family: var(--font-display); font-size: 10px;
+  letter-spacing: 4px; color: var(--muted);
+  margin-bottom: 20px;
+}
+.card-icon {
+  width: 56px; height: 56px; margin-bottom: 20px;
+}
+.card-tag {
+  display: inline-block;
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 3px; padding: 4px 10px;
+  border: 1px solid; margin-bottom: 14px;
+}
+.card-tag.cyan  { color: var(--cyan); border-color: var(--cyan3); background: rgba(0,212,255,.08); }
+.card-tag.gold  { color: var(--gold); border-color: rgba(255,184,0,.3); background: rgba(255,184,0,.08); }
+.card-tag.green { color: var(--green); border-color: rgba(0,255,157,.3); background: rgba(0,255,157,.08); }
+.card-tag.red   { color: var(--red); border-color: rgba(255,68,102,.3); background: rgba(255,68,102,.08); }
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 15px; font-weight: 700;
+  letter-spacing: 1px; margin-bottom: 12px;
+  line-height: 1.3;
+}
+.card-desc {
+  font-size: 13px; line-height: 1.7;
+  color: rgba(232,244,255,.65);
+}
+
+/* Specs table inside card */
+.specs-table {
+  margin-top: 18px;
+  border-top: 1px solid rgba(0,212,255,.1);
+  padding-top: 14px;
+}
+.spec-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.spec-key { font-family: var(--font-mono); font-size: 9px; color: var(--muted); letter-spacing: 1px; }
+.spec-val { font-family: var(--font-mono); font-size: 9px; color: var(--cyan); }
+
+/* Diagnostic overlay on hover */
+.diag-overlay {
+  position: absolute; bottom: 16px; right: 16px;
+  background: rgba(0,10,20,.9);
+  border: 1px solid var(--cyan3);
+  padding: 10px 14px;
+  backdrop-filter: blur(10px);
+  opacity: 0; transform: scale(.9) translateY(4px);
+  transition: opacity .3s, transform .3s;
+  pointer-events: none;
+  font-family: var(--font-mono); font-size: 8px;
+  line-height: 1.8; color: var(--green);
+  letter-spacing: 1px;
+  z-index: 10;
+}
+.comp-card:hover .diag-overlay { opacity: 1; transform: scale(1) translateY(0); }
+
+/* ═══════════════════════════════════════════════
+   PULSE SEQUENCER
+═══════════════════════════════════════════════ */
+.sequencer-section {
+  padding: 80px 24px;
+  max-width: 1000px; margin: 0 auto;
+}
+
+.seq-ring {
+  display: flex; align-items: center; justify-content: center;
+  margin: 40px auto 0;
+}
+#seq-canvas {
+  width: min(600px, 95vw);
+  height: min(600px, 95vw);
+  cursor: pointer;
+}
+
+.seq-legend {
+  display: flex; gap: 24px; flex-wrap: wrap;
+  margin-top: 24px; justify-content: center;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px;
+}
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* ═══════════════════════════════════════════════
+   TELEMETRY FOOTER
+═══════════════════════════════════════════════ */
+.telemetry-bar {
+  border-top: 1px solid rgba(0,212,255,.1);
+  padding: 20px 40px;
+  display: flex; align-items: center; gap: 32px;
+  flex-wrap: wrap;
+  font-family: var(--font-mono); font-size: 9px;
+  color: rgba(0,212,255,.5); letter-spacing: 2px;
+  position: sticky; bottom: 0; z-index: 100;
+  background: rgba(10,10,15,.95);
+  backdrop-filter: blur(20px);
+}
+.tel-item { display: flex; align-items: center; gap: 8px; }
+.tel-item .t-val { color: var(--cyan); }
+.tel-spacer { flex: 1; }
+.tel-uagrm { color: var(--gold); font-size: 8px; }
+
+/* ═══════════════════════════════════════════════
+   UTILITY ANIMATIONS
+═══════════════════════════════════════════════ */
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Intersection observer reveal */
+.reveal {
+  opacity: 0; transform: translateY(40px);
+  transition: opacity .8s ease, transform .8s ease;
+}
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ═══════════════════════════════════════════════
+   CUSTOM CURSOR RING
+═══════════════════════════════════════════════ */
+#cursor-ring {
+  position: fixed;
+  width: 32px; height: 32px;
+  border: 1px solid var(--cyan);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width .2s, height .2s, border-color .2s, opacity .3s;
+  mix-blend-mode: screen;
+}
+body:hover #cursor-ring { opacity: 1; }
+
+/* responsive */
+@media (max-width: 600px) {
+  .manifesto-box { padding: 28px 20px; }
+  .telemetry-bar { gap: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div id="cursor-ring"></div>
+
+<!-- Background starfield -->
+<canvas id="bg-canvas"></canvas>
+
+<div class="page">
+
+  <!-- ══════════════════════ HERO ══════════════════════ -->
+  <section class="hero">
+    <div class="hero-eyebrow">Universidad Autónoma Gabriel René Moreno · Física I · Ingeniería</div>
+    <div class="hero-module-badge">
+      <span class="dot"></span>
+      MÓDULO 02 · SISTEMA ACTIVO · CLEARANCE: ESTUDIANTE
+    </div>
+    <h1 class="hero-title">
+      ARQUITECTURA<br>
+      <span class="accent">DE HARDWARE</span><br>
+      <span style="font-size:.55em; letter-spacing:6px; color:rgba(232,244,255,.4);">ACELERADOR CIRCULAR · UAGRM</span>
+    </h1>
+    <p class="hero-sub">6 SOLENOIDES · ANILLO ACRÍLICO · CONTROL SCR/TIRISTORES · SENSORES IR</p>
+
+    <canvas id="hero-canvas"></canvas>
+    <p class="hero-hint">▸ CLICK PARA ACTIVAR EL ACELERADOR</p>
+
+    <div class="scroll-cue">
+      <span>DESPLAZAR</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════ MANIFESTO ══════════════════════ -->
+  <section class="manifesto-section reveal">
+    <div class="manifesto-box">
+      <div class="manifesto-label">◈ DECLARACIÓN DE MISIÓN · FÍSICA I · UAGRM 2024</div>
+      <p class="manifesto-text">
+        "No construimos un acelerador.<br>
+        Construimos una <em>ventana hacia las leyes fundamentales</em><br>
+        que gobiernan el universo observable."
+      </p>
+      <div class="manifesto-origin">▸ PROYECTO ACELERADOR CIRCULAR · EQUIPO DE INGENIERÍA · SANTA CRUZ, BOLIVIA</div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════ EXPLODED VIEW ══════════════════════ -->
+  <section class="exploded-section">
+    <div class="section-header reveal">
+      <div class="section-label">◈ VISTA EXPLOSIVA INTERACTIVA</div>
+      <h2 class="section-title">DESCOMPOSICIÓN <span>DE SISTEMA</span></h2>
+      <p style="font-family:var(--font-mono);font-size:11px;color:rgba(232,244,255,.4);letter-spacing:3px;margin-top:12px;">CLICK EN LOS COMPONENTES PARA INSPECCIONAR</p>
+    </div>
+    <div class="exploded-arena reveal">
+      <canvas id="exploded-canvas"></canvas>
+      <div class="explode-controls">
+        <div class="explode-btn active" data-layer="all"><span class="btn-dot"></span>SISTEMA COMPLETO</div>
+        <div class="explode-btn" data-layer="ring"><span class="btn-dot" style="color:var(--cyan)"></span>ANILLO ACRÍLICO</div>
+        <div class="explode-btn" data-layer="sol"><span class="btn-dot" style="color:var(--gold)"></span>SOLENOIDES (×6)</div>
+        <div class="explode-btn" data-layer="ir"><span class="btn-dot" style="color:var(--green)"></span>SENSORES IR</div>
+        <div class="explode-btn" data-layer="scr"><span class="btn-dot" style="color:var(--red)"></span>PLACAS SCR</div>
+        <div class="explode-btn" data-layer="proj"><span class="btn-dot" style="color:#ff88cc"></span>PROYECTIL</div>
+        <div class="explode-btn" id="explode-all-btn" data-layer="explode"><span class="btn-dot" style="color:#fff"></span>EXPLOTAR TODO ⚡</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════ COMPONENT CARDS ══════════════════════ -->
+  <section class="components-section">
+    <div class="section-header reveal">
+      <div class="section-label">◈ DIAGNÓSTICO DE COMPONENTES</div>
+      <h2 class="section-title">HARDWARE <span>DETALLADO</span></h2>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- CARD 1: SOLENOIDS -->
+      <div class="comp-card reveal" style="transition-delay:.05s">
+        <div class="card-glow"></div>
+        <div class="scan-line"></div>
+        <div class="card-num">COMP-01 / 04</div>
+        <svg class="card-icon" viewBox="0 0 56 56" fill="none">
+          <circle cx="28" cy="28" r="26" stroke="#FFB800" stroke-width="1" stroke-dasharray="4 3" opacity=".3"/>
+          <rect x="10" y="22" width="36" height="12" rx="2" fill="none" stroke="#FFB800" stroke-width="1.5"/>
+          <line x1="16" y1="22" x2="16" y2="34" stroke="#FFB800" stroke-width="1" opacity=".6"/>
+          <line x1="22" y1="22" x2="22" y2="34" stroke="#FFB800" stroke-width="1" opacity=".6"/>
+          <line x1="28" y1="22" x2="28" y2="34" stroke="#FFB800" stroke-width="1" opacity=".6"/>
+          <line x1="34" y1="22" x2="34" y2="34" stroke="#FFB800" stroke-width="1" opacity=".6"/>
+          <line x1="40" y1="22" x2="40" y2="34" stroke="#FFB800" stroke-width="1" opacity=".6"/>
+          <circle cx="28" cy="28" r="4" fill="#FFB800" opacity=".9">
+            <animate attributeName="opacity" values="0.9;0.3;0.9" dur="1.5s" repeatCount="indefinite"/>
+          </circle>
+          <path d="M4 28 C10 10 20 4 28 4" stroke="#FFB800" stroke-width=".8" opacity=".4" fill="none"/>
+        </svg>
+        <div class="card-tag gold">SOLENOIDES × 6</div>
+        <h3 class="card-title">Solenoides de Cobre Estañado</h3>
+        <p class="card-desc">
+          Seis electroimanes de núcleo de aire, equidistantes a 60° sobre el anillo. Cada solenoide genera un pulso magnético secuencial que actúa como etapa de inducción de alta densidad. El campo B confina y acelera el proyectil ferromagnético mediante fuerza de Lorentz controlada en timing de microsegundos.
+        </p>
+        <div class="specs-table">
+          <div class="spec-row"><span class="spec-key">CONFIGURACIÓN</span><span class="spec-val" style="color:var(--gold)">SECUENCIAL 1→2→3→4→5→6</span></div>
+          <div class="spec-row"><span class="spec-key">SEPARACIÓN ANGULAR</span><span class="spec-val" style="color:var(--gold)">60° EQUIDISTANTE</span></div>
+          <div class="spec-row"><span class="spec-key">MATERIAL</span><span class="spec-val" style="color:var(--gold)">Cu ESTAÑADO, NÚCLEO AIRE</span></div>
+          <div class="spec-row"><span class="spec-key">PRINCIPIO</span><span class="spec-val" style="color:var(--gold)">INDUCCIÓN ELECTROMAGNÉTICA</span></div>
+          <div class="spec-row"><span class="spec-key">ACCIÓN</span><span class="spec-val" style="color:var(--gold)">PULSO MAGNÉTICO DISCRETO</span></div>
+        </div>
+        <div class="diag-overlay">
+          ● CAMPO MAGNÉTICO: ACTIVO<br>
+          ● SECUENCIA: NOMINAL<br>
+          ● TEMP BOBINA: 28.4°C<br>
+          ● ESTADO: LISTO ✓
+        </div>
+      </div>
+
+      <!-- CARD 2: IR SENSORS -->
+      <div class="comp-card reveal" style="transition-delay:.1s">
+        <div class="card-glow" style="background:radial-gradient(ellipse at center, rgba(0,255,157,.06), transparent 70%)"></div>
+        <div class="scan-line"></div>
+        <div class="card-num">COMP-02 / 04</div>
+        <svg class="card-icon" viewBox="0 0 56 56" fill="none">
+          <circle cx="28" cy="28" r="12" stroke="#00FF9D" stroke-width="1.5"/>
+          <circle cx="28" cy="28" r="5" fill="#00FF9D" opacity=".8">
+            <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <path d="M28 10 L28 4" stroke="#00FF9D" stroke-width="1.5" opacity=".6"/>
+          <path d="M28 46 L28 52" stroke="#00FF9D" stroke-width="1.5" opacity=".6"/>
+          <path d="M10 28 L4 28" stroke="#00FF9D" stroke-width="1.5" opacity=".6"/>
+          <path d="M46 28 L52 28" stroke="#00FF9D" stroke-width="1.5" opacity=".6"/>
+          <path d="M38 10 C44 16 48 22 48 28" stroke="#00FF9D" stroke-width=".8" fill="none" opacity=".3" stroke-dasharray="3 2"/>
+          <path d="M18 10 C12 16 8 22 8 28" stroke="#00FF9D" stroke-width=".8" fill="none" opacity=".3" stroke-dasharray="3 2"/>
+        </svg>
+        <div class="card-tag green">SENSORES IR · OPTICAL GATES</div>
+        <h3 class="card-title">Sensores Infrarrojos de Posición</h3>
+        <p class="card-desc">
+          Los "ojos" del sistema: barreras ópticas infrarrojas instaladas entre cada solenoide. Detectan el paso del proyectil con precisión de milisegundos, enviando la señal trigger al siguiente SCR. Este timing evita que el proyectil quede atrapado dentro del solenoide una vez que el campo colapsa — el problema clásico de "back-suck" en aceleradores tipo coilgun.
+        </p>
+        <div class="specs-table">
+          <div class="spec-row"><span class="spec-key">FUNCIÓN</span><span class="spec-val" style="color:var(--green)">DETECCIÓN DE POSICIÓN</span></div>
+          <div class="spec-row"><span class="spec-key">TIPO</span><span class="spec-val" style="color:var(--green)">EMISOR IR + FOTODETECTOR</span></div>
+          <div class="spec-row"><span class="spec-key">ACCIÓN TRIGGER</span><span class="spec-val" style="color:var(--green)">CORTA SCR ACTIVO</span></div>
+          <div class="spec-row"><span class="spec-key">PREVENCIÓN</span><span class="spec-val" style="color:var(--green)">ANTI BACK-SUCK</span></div>
+          <div class="spec-row"><span class="spec-key">LATENCIA</span><span class="spec-val" style="color:var(--green)">&lt; 1 ms</span></div>
+        </div>
+        <div class="diag-overlay" style="color:var(--green)">
+          ● EMISOR IR: ACTIVO<br>
+          ● DETECCIÓN: NOMINAL<br>
+          ● TRIGGER: LISTO<br>
+          ● ESTADO: ON-LINE ✓
+        </div>
+      </div>
+
+      <!-- CARD 3: SCR / THYRISTORS -->
+      <div class="comp-card reveal" style="transition-delay:.15s">
+        <div class="card-glow" style="background:radial-gradient(ellipse at center, rgba(255,68,102,.06), transparent 70%)"></div>
+        <div class="scan-line"></div>
+        <div class="card-num">COMP-03 / 04</div>
+        <svg class="card-icon" viewBox="0 0 56 56" fill="none">
+          <rect x="16" y="16" width="24" height="24" rx="2" fill="none" stroke="#FF4466" stroke-width="1.5"/>
+          <polygon points="22,24 34,28 22,32" fill="#FF4466" opacity=".7">
+            <animateTransform attributeName="transform" type="scale" values="1;1.1;1" dur="1s" repeatCount="indefinite" additive="sum"/>
+          </polygon>
+          <line x1="28" y1="8" x2="28" y2="16" stroke="#FF4466" stroke-width="2"/>
+          <line x1="28" y1="40" x2="28" y2="48" stroke="#FF4466" stroke-width="2"/>
+          <line x1="20" y1="28" x2="8" y2="28" stroke="#FF4466" stroke-width="1.5" opacity=".6"/>
+          <circle cx="8" cy="28" r="2" fill="#FF4466"/>
+          <line x1="28" y1="24" x2="28" y2="32" stroke="#FF4466" stroke-width=".8" opacity=".4"/>
+        </svg>
+        <div class="card-tag red">PLACAS SCR · TIRISTORES</div>
+        <h3 class="card-title">Control SCR / Tiristores</h3>
+        <p class="card-desc">
+          Los interruptores de alta velocidad del sistema. Los tiristores (SCR) permanecen bloqueados hasta recibir el pulso de disparo del sensor IR correspondiente. En ese instante, abren el paso de la energía almacenada en el banco de capacitores hacia el solenoide activo, completando la descarga en microsegundos con un pico de corriente de alta densidad.
+        </p>
+        <div class="specs-table">
+          <div class="spec-row"><span class="spec-key">FUNCIÓN</span><span class="spec-val" style="color:var(--red)">SWITCH DE ALTA VELOCIDAD</span></div>
+          <div class="spec-row"><span class="spec-key">TRIGGER</span><span class="spec-val" style="color:var(--red)">PULSO IR → DISPARO</span></div>
+          <div class="spec-row"><span class="spec-key">FUENTE</span><span class="spec-val" style="color:var(--red)">BANCO DE CAPACITORES</span></div>
+          <div class="spec-row"><span class="spec-key">DESCARGA</span><span class="spec-val" style="color:var(--red)">PULSO &lt; 100 µs</span></div>
+          <div class="spec-row"><span class="spec-key">TIPO</span><span class="spec-val" style="color:var(--red)">RECTIFICADOR CONTROLADO</span></div>
+        </div>
+        <div class="diag-overlay" style="color:var(--red)">
+          ● SCR-01: STANDBY<br>
+          ● CAPACITOR: CARGADO<br>
+          ● GATE: ESPERANDO IR<br>
+          ● ESTADO: ARMED ⚡
+        </div>
+      </div>
+
+      <!-- CARD 4: RING -->
+      <div class="comp-card reveal" style="transition-delay:.2s">
+        <div class="card-glow" style="background:radial-gradient(ellipse at center, rgba(0,212,255,.06), transparent 70%)"></div>
+        <div class="scan-line"></div>
+        <div class="card-num">COMP-04 / 04</div>
+        <svg class="card-icon" viewBox="0 0 56 56" fill="none">
+          <circle cx="28" cy="28" r="22" fill="none" stroke="#00D4FF" stroke-width="2" opacity=".8"/>
+          <circle cx="28" cy="28" r="16" fill="none" stroke="#00D4FF" stroke-width="1" opacity=".3" stroke-dasharray="3 2"/>
+          <circle cx="28" cy="28" r="10" fill="none" stroke="#00D4FF" stroke-width=".8" opacity=".2"/>
+          <circle cx="28" cy="6"  r="3" fill="#FFB800"/>
+          <circle cx="47" cy="17" r="3" fill="#FFB800"/>
+          <circle cx="47" cy="39" r="3" fill="#FFB800"/>
+          <circle cx="28" cy="50" r="3" fill="#FFB800"/>
+          <circle cx="9"  cy="39" r="3" fill="#FFB800"/>
+          <circle cx="9"  cy="17" r="3" fill="#FFB800"/>
+          <circle cx="28" cy="28" r="4" fill="none" stroke="#00D4FF" stroke-width="1"/>
+        </svg>
+        <div class="card-tag cyan">ESTRUCTURA FÍSICA</div>
+        <h3 class="card-title">Anillo Acrílico & Riel de Guía</h3>
+        <p class="card-desc">
+          El esqueleto mecánico del prototipo. El anillo de acrílico define la trayectoria circular y posiciona con precisión los 6 solenoides a 60° equidistantes. Su material no ferromagnético elimina interferencia con los campos magnéticos. El canal interno actúa como riel de guía, manteniendo el proyectil en el eje de inducción óptimo durante toda la aceleración.
+        </p>
+        <div class="specs-table">
+          <div class="spec-row"><span class="spec-key">MATERIAL</span><span class="spec-val">PMMA / ACRÍLICO</span></div>
+          <div class="spec-row"><span class="spec-key">POSICIONAMIENTO</span><span class="spec-val">6× SOLENOIDES A 60°</span></div>
+          <div class="spec-row"><span class="spec-key">INTERFERENCIA B</span><span class="spec-val">≈ 0 (NO FERROMAGNÉTICO)</span></div>
+          <div class="spec-row"><span class="spec-key">FUNCIÓN RIEL</span><span class="spec-val">CONFINAMIENTO AXIAL</span></div>
+          <div class="spec-row"><span class="spec-key">FORMA</span><span class="spec-val">CIRCULAR CERRADO</span></div>
+        </div>
+        <div class="diag-overlay">
+          ● ESTRUCTURA: NOMINAL<br>
+          ● ALINEACIÓN: ±0.5 mm<br>
+          ● INTERFERENCIA B: NULL<br>
+          ● ESTADO: ESTABLE ✓
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════ PULSE SEQUENCER ══════════════════════ -->
+  <section class="sequencer-section">
+    <div class="section-header reveal">
+      <div class="section-label">◈ SECUENCIADOR DE PULSOS</div>
+      <h2 class="section-title">VISUALIZACIÓN <span>EN TIEMPO REAL</span></h2>
+      <p style="font-family:var(--font-mono);font-size:11px;color:rgba(232,244,255,.4);letter-spacing:3px;margin-top:12px;">CLICK PARA INICIAR / DETENER LA SECUENCIA</p>
+    </div>
+    <div class="seq-ring reveal">
+      <canvas id="seq-canvas"></canvas>
+    </div>
+    <div class="seq-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--gold);box-shadow:0 0 8px var(--gold)"></div>SOLENOIDE ACTIVO</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green);box-shadow:0 0 8px var(--green)"></div>SENSOR IR DETECTANDO</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red);box-shadow:0 0 8px var(--red)"></div>SCR DISPARADO</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ff88cc;box-shadow:0 0 8px #ff88cc"></div>PROYECTIL</div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════ FOOTER TELEMETRY ══════════════════════ -->
+  <div class="telemetry-bar">
+    <div class="tel-item">◈ <span class="t-val" id="tel-time">00:00:00</span></div>
+    <div class="tel-item">MÓDULO <span class="t-val">02</span></div>
+    <div class="tel-item">SOLENOIDES <span class="t-val">6×</span></div>
+    <div class="tel-item">SISTEMA <span class="t-val" style="color:var(--green)">ACTIVO</span></div>
+    <div class="tel-item">TOPOLOGÍA <span class="t-val">CIRCULAR</span></div>
+    <div class="tel-spacer"></div>
+    <div class="tel-uagrm">UAGRM · FÍSICA I · SANTA CRUZ, BOLIVIA · 2024</div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- ══════════════════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════════════════ -->
+<script>
+/* ─────────────────────────────────────────────
+   CURSOR RING
+───────────────────────────────────────────── */
+const cursorRing = document.getElementById('cursor-ring');
+document.addEventListener('mousemove', e => {
+  cursorRing.style.left = e.clientX + 'px';
+  cursorRing.style.top  = e.clientY + 'px';
+});
+document.addEventListener('mousedown', () => {
+  cursorRing.style.width  = '16px';
+  cursorRing.style.height = '16px';
+  cursorRing.style.borderColor = 'var(--gold)';
+});
+document.addEventListener('mouseup', () => {
+  cursorRing.style.width  = '32px';
+  cursorRing.style.height = '32px';
+  cursorRing.style.borderColor = 'var(--cyan)';
+});
+
+/* ─────────────────────────────────────────────
+   TELEMETRY CLOCK
+───────────────────────────────────────────── */
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('tel-time').textContent = `${h}:${m}:${s}`;
+}
+setInterval(updateClock, 1000); updateClock();
+
+/* ─────────────────────────────────────────────
+   INTERSECTION OBSERVER (scroll reveals)
+───────────────────────────────────────────── */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+/* ─────────────────────────────────────────────
+   BG CANVAS — Starfield + Floating Particles
+───────────────────────────────────────────── */
+(function bgCanvas() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, stars = [], particles = [];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize(); window.addEventListener('resize', resize);
+
+  // Stars
+  for (let i = 0; i < 200; i++) {
+    stars.push({
+      x: Math.random(),
+      y: Math.random(),
+      r: Math.random() * 1.2,
+      a: Math.random(),
+      speed: .001 + Math.random() * .002
+    });
+  }
+
+  // Floating data particles
+  function spawnParticle() {
+    const colors = ['#00D4FF','#FFB800','#00FF9D'];
+    return {
+      x: Math.random() * W,
+      y: H + 10,
+      vx: (Math.random() - .5) * .4,
+      vy: -(.3 + Math.random() * .6),
+      r: .5 + Math.random() * 1.5,
+      color: colors[Math.floor(Math.random() * 3)],
+      life: 1,
+      decay: .002 + Math.random() * .003
+    };
+  }
+  for (let i = 0; i < 40; i++) {
+    const p = spawnParticle(); p.y = Math.random() * H;
+    particles.push(p);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Stars
+    stars.forEach(s => {
+      s.a += s.speed;
+      const alpha = .1 + .3 * Math.abs(Math.sin(s.a));
+      ctx.beginPath();
+      ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(0,212,255,${alpha})`;
+      ctx.fill();
+    });
+
+    // Particles
+    particles.forEach((p, i) => {
+      p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+      if (p.life <= 0) particles[i] = spawnParticle();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + Math.floor(p.life * 99).toString(16).padStart(2,'0');
+      ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ─────────────────────────────────────────────
+   HERO CANVAS — Animated Circular Accelerator
+───────────────────────────────────────────── */
+(function heroCanvas() {
+  const canvas = document.getElementById('hero-canvas');
+  const ctx = canvas.getContext('2d');
+  const SIZE = 480;
+  canvas.width = canvas.height = SIZE;
+
+  const CX = SIZE / 2, CY = SIZE / 2;
+  const R_RING  = 160;
+  const R_SOL   = 22;
+  const N_SOL   = 6;
+  let running    = false;
+  let activePhase = 0;
+  let phaseTimer = 0;
+  let particleAngle = 0;
+  let speed = 0;
+  let energyPulses = [];
+  let fieldWaves = [];
+  let time = 0;
+
+  // Solenoid positions
+  function solPos(i) {
+    const a = (i / N_SOL) * Math.PI * 2 - Math.PI / 2;
+    return { x: CX + R_RING * Math.cos(a), y: CY + R_RING * Math.sin(a), a };
+  }
+
+  function drawRing() {
+    // Outer glow
+    const grd = ctx.createRadialGradient(CX, CY, R_RING - 20, CX, CY, R_RING + 20);
+    grd.addColorStop(0, 'rgba(0,212,255,0)');
+    grd.addColorStop(.5, 'rgba(0,212,255,0.04)');
+    grd.addColorStop(1, 'rgba(0,212,255,0)');
+    ctx.beginPath();
+    ctx.arc(CX, CY, R_RING, 0, Math.PI * 2);
+    ctx.strokeStyle = grd;
+    ctx.lineWidth = 40;
+    ctx.stroke();
+
+    // Ring outline
+    ctx.beginPath();
+    ctx.arc(CX, CY, R_RING, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,212,255,0.25)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Inner track dashes
+    ctx.beginPath();
+    ctx.arc(CX, CY, R_RING, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,212,255,0.08)';
+    ctx.lineWidth = 18;
+    ctx.setLineDash([6, 6]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Center marker
+    ctx.beginPath();
+    ctx.arc(CX, CY, 4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,212,255,0.4)';
+    ctx.fill();
+  }
+
+  function drawSolenoid(i) {
+    const pos = solPos(i);
+    const isActive = running && i === activePhase;
+    const glow = isActive ? 1 : .25;
+
+    // Outer glow halo
+    if (isActive) {
+      const g = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, R_SOL * 2.5);
+      g.addColorStop(0, 'rgba(255,184,0,0.3)');
+      g.addColorStop(1, 'rgba(255,184,0,0)');
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, R_SOL * 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
+    }
+
+    // Body
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, R_SOL, 0, Math.PI * 2);
+    ctx.fillStyle = isActive ? 'rgba(255,184,0,0.15)' : 'rgba(0,212,255,0.06)';
+    ctx.fill();
+    ctx.strokeStyle = isActive ? '#FFB800' : 'rgba(0,212,255,0.4)';
+    ctx.lineWidth = isActive ? 2.5 : 1.5;
+    ctx.stroke();
+
+    // Coil windings
+    for (let w = -2; w <= 2; w++) {
+      ctx.beginPath();
+      ctx.ellipse(pos.x, pos.y, R_SOL * .6, R_SOL * .25, pos.a + Math.PI/2, 0, Math.PI * 2);
+      ctx.strokeStyle = isActive ? `rgba(255,184,0,${.3 + w * .05})` : 'rgba(0,212,255,0.2)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // Label
+    ctx.fillStyle = isActive ? '#FFB800' : 'rgba(0,212,255,0.5)';
+    ctx.font = '600 9px Orbitron, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`S${i+1}`, pos.x, pos.y);
+
+    // IR sensor dots
+    const sAngle = ((i + .5) / N_SOL) * Math.PI * 2 - Math.PI / 2;
+    const sx = CX + R_RING * Math.cos(sAngle);
+    const sy = CY + R_RING * Math.sin(sAngle);
+    const irActive = running && i === activePhase;
+    ctx.beginPath();
+    ctx.arc(sx, sy, 5, 0, Math.PI * 2);
+    ctx.fillStyle = irActive ? '#00FF9D' : 'rgba(0,255,157,0.25)';
+    if (irActive) ctx.shadowColor = '#00FF9D';
+    if (irActive) ctx.shadowBlur = 12;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  function drawEnergyPulses() {
+    energyPulses = energyPulses.filter(p => p.life > 0);
+    energyPulses.forEach(p => {
+      p.life -= 0.03;
+      p.radius += 3;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,184,0,${p.life * 0.7})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+  }
+
+  function drawFieldWaves() {
+    fieldWaves = fieldWaves.filter(w => w.life > 0);
+    fieldWaves.forEach(w => {
+      w.life -= 0.015;
+      w.radius += 2;
+      ctx.beginPath();
+      ctx.arc(CX, CY, w.radius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(0,212,255,${w.life * 0.15})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+  }
+
+  function drawProjectile() {
+    if (!running) return;
+    const px = CX + R_RING * Math.cos(particleAngle);
+    const py = CY + R_RING * Math.sin(particleAngle);
+
+    // Trail
+    for (let t = 1; t <= 12; t++) {
+      const ta = particleAngle - t * .05;
+      const tx = CX + R_RING * Math.cos(ta);
+      const ty = CY + R_RING * Math.sin(ta);
+      ctx.beginPath();
+      ctx.arc(tx, ty, 4 - t * .25, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,136,204,${(12 - t) / 12 * 0.6})`;
+      ctx.fill();
+    }
+
+    // Main projectile
+    const g = ctx.createRadialGradient(px, py, 0, px, py, 8);
+    g.addColorStop(0, '#ffffff');
+    g.addColorStop(.4, '#ff88cc');
+    g.addColorStop(1, 'rgba(255,136,204,0)');
+    ctx.beginPath();
+    ctx.arc(px, py, 8, 0, Math.PI * 2);
+    ctx.fillStyle = g;
+    ctx.fill();
+  }
+
+  function drawCenterText() {
+    ctx.textAlign = 'center';
+    if (!running) {
+      ctx.fillStyle = 'rgba(0,212,255,0.5)';
+      ctx.font = '700 11px Orbitron, monospace';
+      ctx.fillText('CLICK', CX, CY - 8);
+      ctx.fillStyle = 'rgba(0,212,255,0.3)';
+      ctx.font = '500 9px Orbitron, monospace';
+      ctx.fillText('ACTIVAR', CX, CY + 8);
+    } else {
+      ctx.fillStyle = 'rgba(255,184,0,0.8)';
+      ctx.font = '700 10px Orbitron, monospace';
+      ctx.fillText(`SOL ${activePhase + 1}/6`, CX, CY - 8);
+      ctx.fillStyle = 'rgba(0,255,157,0.6)';
+      ctx.font = '500 8px monospace';
+      ctx.fillText('SECUENCIA ACTIVA', CX, CY + 8);
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, SIZE, SIZE);
+    time += .016;
+
+    drawFieldWaves();
+    drawRing();
+    for (let i = 0; i < N_SOL; i++) drawSolenoid(i);
+    drawEnergyPulses();
+    drawProjectile();
+    drawCenterText();
+
+    if (running) {
+      speed += 0.002;
+      if (speed > 0.04) speed = 0.04;
+      particleAngle += speed;
+
+      phaseTimer++;
+      if (phaseTimer > 60) {
+        phaseTimer = 0;
+        const pos = solPos(activePhase);
+        energyPulses.push({ x: pos.x, y: pos.y, radius: 5, life: 1 });
+        fieldWaves.push({ radius: 30, life: 1 });
+        activePhase = (activePhase + 1) % N_SOL;
+      }
+    } else {
+      speed *= 0.97;
+      if (speed > 0.001) particleAngle += speed;
+    }
+
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  canvas.addEventListener('click', () => {
+    running = !running;
+    if (!running) { speed = 0.01; }
+  });
+})();
+
+/* ─────────────────────────────────────────────
+   EXPLODED VIEW CANVAS
+───────────────────────────────────────────── */
+(function explodedCanvas() {
+  const canvas = document.getElementById('exploded-canvas');
+  const ctx = canvas.getContext('2d');
+  const SIZE = 700;
+  canvas.width = canvas.height = SIZE;
+  const CX = SIZE / 2, CY = SIZE / 2;
+  const R_RING = 200;
+  const N = 6;
+
+  let explodeT = 0; // 0 = normal, 1 = exploded
+  let exploding = false;
+  let explodeDir = 0; // 1 = exploding, -1 = collapsing
+  let highlightLayer = 'all';
+  let time = 0;
+
+  function solPos(i, explodeAmt) {
+    const a = (i / N) * Math.PI * 2 - Math.PI / 2;
+    const extra = explodeAmt * 80;
+    return {
+      x: CX + (R_RING + extra) * Math.cos(a),
+      y: CY + (R_RING + extra) * Math.sin(a),
+      a
+    };
+  }
+
+  function alpha(layer, value = 1) {
+    if (highlightLayer === 'all' || highlightLayer === layer) return value;
+    return value * 0.08;
+  }
+
+  function drawBase(eT) {
+    // Grid lines
+    ctx.strokeStyle = `rgba(0,212,255,0.04)`;
+    ctx.lineWidth = 1;
+    for (let x = 0; x < SIZE; x += 40) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, SIZE); ctx.stroke();
+    }
+    for (let y = 0; y < SIZE; y += 40) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(SIZE, y); ctx.stroke();
+    }
+
+    // Ring
+    const ra = alpha('ring');
+    ctx.globalAlpha = ra;
+
+    // Ring glow
+    const grd = ctx.createRadialGradient(CX, CY, R_RING - 30, CX, CY, R_RING + 30);
+    grd.addColorStop(0, 'rgba(0,212,255,0)');
+    grd.addColorStop(.5, `rgba(0,212,255,${0.08 * ra})`);
+    grd.addColorStop(1, 'rgba(0,212,255,0)');
+    ctx.beginPath(); ctx.arc(CX, CY, R_RING, 0, Math.PI * 2);
+    ctx.strokeStyle = grd; ctx.lineWidth = 50; ctx.stroke();
+
+    ctx.beginPath(); ctx.arc(CX, CY, R_RING, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,212,255,0.5)'; ctx.lineWidth = 4; ctx.stroke();
+    ctx.beginPath(); ctx.arc(CX, CY, R_RING - 14, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,212,255,0.1)'; ctx.lineWidth = 24; ctx.stroke();
+
+    // Ring label
+    ctx.fillStyle = 'rgba(0,212,255,0.6)';
+    ctx.font = '700 10px Orbitron, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('ANILLO ACRÍLICO Ø400mm', CX, CY - R_RING + 10);
+
+    ctx.globalAlpha = 1;
+  }
+
+  function drawSolenoids(eT) {
+    for (let i = 0; i < N; i++) {
+      const pos = solPos(i, eT);
+      const a = (i / N) * Math.PI * 2 - Math.PI / 2;
+      const sa = alpha('sol');
+      ctx.globalAlpha = sa;
+
+      // Glow halo
+      const g = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, 50);
+      g.addColorStop(0, 'rgba(255,184,0,0.15)');
+      g.addColorStop(1, 'rgba(255,184,0,0)');
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, 50, 0, Math.PI * 2);
+      ctx.fillStyle = g; ctx.fill();
+
+      // Body
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, 28, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,184,0,0.12)'; ctx.fill();
+      ctx.strokeStyle = '#FFB800'; ctx.lineWidth = 2; ctx.stroke();
+
+      // Windings
+      for (let w = -3; w <= 3; w++) {
+        ctx.beginPath();
+        ctx.ellipse(pos.x, pos.y, 22, 9, a + Math.PI/2, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255,184,0,${0.2 + Math.abs(w) * .03})`;
+        ctx.lineWidth = 1; ctx.stroke();
+      }
+
+      // SCR connecting line
+      if (eT < 0.3) {
+        const scx = CX + (R_RING * .45) * Math.cos(a);
+        const scy = CY + (R_RING * .45) * Math.sin(a);
+        ctx.beginPath(); ctx.moveTo(pos.x, pos.y); ctx.lineTo(scx, scy);
+        ctx.strokeStyle = `rgba(255,68,102,${0.3 * (1 - eT / 0.3)})`;
+        ctx.lineWidth = 1; ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
+      }
+
+      // Exploded label
+      if (eT > 0.5) {
+        ctx.fillStyle = '#FFB800';
+        ctx.font = '600 9px Orbitron, monospace';
+        ctx.textAlign = 'center';
+        const la = a + Math.PI / 2;
+        ctx.fillText(`S${i+1}`, pos.x + Math.cos(a) * 38, pos.y + Math.sin(a) * 38);
+        // Spec
+        ctx.fillStyle = 'rgba(255,184,0,0.5)';
+        ctx.font = '500 7px Share Tech Mono, monospace';
+        ctx.fillText('COBRE ESTAÑADO', pos.x + Math.cos(a) * 52, pos.y + Math.sin(a) * 52);
+      }
+
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawIRSensors(eT) {
+    const vertShift = eT * 60;
+    for (let i = 0; i < N; i++) {
+      const a = ((i + .5) / N) * Math.PI * 2 - Math.PI / 2;
+      const rx = CX + R_RING * Math.cos(a);
+      const ry = CY + R_RING * Math.sin(a);
+      const sx = rx + Math.cos(a) * (eT * 50);
+      const sy = ry + Math.sin(a) * (eT * 50) - vertShift;
+      const ia = alpha('ir');
+      ctx.globalAlpha = ia;
+
+      // Sensor body
+      ctx.beginPath(); ctx.arc(sx, sy, 8, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,255,157,0.2)'; ctx.fill();
+      ctx.strokeStyle = '#00FF9D'; ctx.lineWidth = 1.5; ctx.stroke();
+
+      // IR beam
+      const b1x = CX + (R_RING - 20) * Math.cos(a);
+      const b1y = CY + (R_RING - 20) * Math.sin(a);
+      const b2x = CX + (R_RING + 20) * Math.cos(a);
+      const b2y = CY + (R_RING + 20) * Math.sin(a);
+      ctx.beginPath(); ctx.moveTo(b1x, b1y); ctx.lineTo(b2x, b2y);
+      ctx.strokeStyle = `rgba(0,255,157,${0.3 + 0.3 * Math.sin(time * 4)})`;
+      ctx.lineWidth = 2; ctx.stroke();
+
+      if (eT > 0.5) {
+        ctx.fillStyle = '#00FF9D';
+        ctx.font = '600 7px Orbitron, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('IR', sx, sy + 18);
+        ctx.fillStyle = 'rgba(0,255,157,0.4)';
+        ctx.font = '500 6px Share Tech Mono, monospace';
+        ctx.fillText('OPTICAL GATE', sx, sy + 28);
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawSCRPlates(eT) {
+    const upShift = eT * 80;
+    const pa = alpha('scr');
+    ctx.globalAlpha = pa;
+    for (let i = 0; i < N; i++) {
+      const a = (i / N) * Math.PI * 2 - Math.PI / 2;
+      const px = CX + (R_RING * .45) * Math.cos(a);
+      const py = CY + (R_RING * .45) * Math.sin(a) + upShift;
+
+      // Board
+      ctx.fillStyle = 'rgba(255,68,102,0.1)';
+      ctx.strokeStyle = '#FF4466'; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(px - 12, py - 8, 24, 16, 2);
+      ctx.fill(); ctx.stroke();
+
+      // Chip
+      ctx.fillStyle = 'rgba(255,68,102,0.4)';
+      ctx.fillRect(px - 5, py - 4, 10, 8);
+
+      if (eT > 0.5) {
+        ctx.fillStyle = '#FF4466';
+        ctx.font = '600 7px Orbitron, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`SCR-${i+1}`, px, py + 18);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawProjectile(eT) {
+    if (highlightLayer !== 'all' && highlightLayer !== 'proj') return;
+    const a = alpha('proj');
+    ctx.globalAlpha = a;
+    const px = CX + R_RING * Math.cos(time * .4);
+    const py = CY + R_RING * Math.sin(time * .4);
+    const g = ctx.createRadialGradient(px, py, 0, px, py, 10);
+    g.addColorStop(0, '#fff');
+    g.addColorStop(.4, '#ff88cc');
+    g.addColorStop(1, 'rgba(255,136,204,0)');
+    ctx.beginPath(); ctx.arc(px, py, 10, 0, Math.PI * 2);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, SIZE, SIZE);
+    time += .016;
+
+    // Update explode animation
+    if (exploding) {
+      explodeT += explodeDir * 0.02;
+      explodeT = Math.max(0, Math.min(1, explodeT));
+      if (explodeT === 0 || explodeT === 1) exploding = false;
+    }
+
+    const eT = explodeT;
+    drawBase(eT);
+    drawSCRPlates(eT);
+    drawSolenoids(eT);
+    drawIRSensors(eT);
+    drawProjectile(eT);
+
+    // Center info
+    if (eT < 0.5) {
+      ctx.globalAlpha = 1 - eT * 2;
+      ctx.fillStyle = 'rgba(0,212,255,0.3)';
+      ctx.font = '700 11px Orbitron, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('ACELERADOR CIRCULAR', CX, CY);
+      ctx.fillStyle = 'rgba(0,212,255,0.2)';
+      ctx.font = '500 8px Share Tech Mono, monospace';
+      ctx.fillText('UAGRM · FÍSICA I', CX, CY + 16);
+      ctx.globalAlpha = 1;
+    }
+
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  // Button controls
+  document.querySelectorAll('.explode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.explode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const layer = btn.dataset.layer;
+      if (layer === 'explode') {
+        if (explodeT < 0.5) { explodeDir = 1; } else { explodeDir = -1; }
+        exploding = true;
+        highlightLayer = 'all';
+      } else {
+        highlightLayer = layer;
+      }
+    });
+  });
+
+  canvas.addEventListener('click', () => {
+    if (explodeT < 0.5) { explodeDir = 1; } else { explodeDir = -1; }
+    exploding = true;
+  });
+})();
+
+/* ─────────────────────────────────────────────
+   SEQUENCER CANVAS — Full Animation
+───────────────────────────────────────────── */
+(function seqCanvas() {
+  const canvas = document.getElementById('seq-canvas');
+  const ctx = canvas.getContext('2d');
+  const SIZE = 600;
+  canvas.width = canvas.height = SIZE;
+  const CX = SIZE / 2, CY = SIZE / 2;
+  const R = 190;
+  const N = 6;
+
+  let running = true;
+  let time = 0;
+  let phase = 0;
+  let phaseT = 0;
+  let projAngle = -Math.PI / 2;
+  let projSpeed = 0.018;
+  let pulses = [];
+  let waveRings = [];
+  let textFlashes = [];
+
+  function solPos(i) {
+    const a = (i / N) * Math.PI * 2 - Math.PI / 2;
+    return { x: CX + R * Math.cos(a), y: CY + R * Math.sin(a), a };
+  }
+
+  function irPos(i) {
+    const a = ((i + .5) / N) * Math.PI * 2 - Math.PI / 2;
+    return { x: CX + R * Math.cos(a), y: CY + R * Math.sin(a), a };
+  }
+
+  function nextPhase() {
+    const pos = solPos(phase);
+    for (let r = 0; r < 3; r++) {
+      pulses.push({ x: pos.x, y: pos.y, radius: 4, maxR: 50, life: 1, color: '#FFB800' });
+    }
+    waveRings.push({ r: R * .2, maxR: R * .55, life: 1 });
+    textFlashes.push({ text: `SCR-${phase+1} FIRE`, x: pos.x, y: pos.y - 40, life: 1 });
+    phase = (phase + 1) % N;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, SIZE, SIZE);
+    time += .016;
+
+    // BG grid
+    ctx.strokeStyle = 'rgba(0,212,255,0.04)'; ctx.lineWidth = 1;
+    for (let x = 0; x < SIZE; x += 30) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,SIZE); ctx.stroke(); }
+    for (let y = 0; y < SIZE; y += 30) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(SIZE,y); ctx.stroke(); }
+
+    // Wave rings
+    waveRings = waveRings.filter(w => w.life > 0);
+    waveRings.forEach(w => {
+      w.r += 2.5; w.life -= 0.018;
+      ctx.beginPath(); ctx.arc(CX, CY, w.r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(0,212,255,${w.life * 0.2})`; ctx.lineWidth = 2; ctx.stroke();
+    });
+
+    // Ring structure
+    // Outer ring
+    ctx.beginPath(); ctx.arc(CX, CY, R + 18, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,212,255,0.12)'; ctx.lineWidth = 32; ctx.stroke();
+    ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,212,255,0.35)'; ctx.lineWidth = 3; ctx.stroke();
+
+    // Magnetic field arcs between solenoids
+    for (let i = 0; i < N; i++) {
+      const a1 = (i / N) * Math.PI * 2 - Math.PI / 2;
+      const a2 = ((i + 1) / N) * Math.PI * 2 - Math.PI / 2;
+      const isActive = running && i === phase;
+      const fieldAlpha = isActive ? .4 : .05;
+      ctx.beginPath();
+      ctx.arc(CX, CY, R, a1, a2);
+      ctx.strokeStyle = `rgba(0,212,255,${fieldAlpha + .05 * Math.sin(time * 3 + i)})`;
+      ctx.lineWidth = isActive ? 6 : 2; ctx.stroke();
+    }
+
+    // SCR plates in center ring
+    const R_SCR = R * .38;
+    for (let i = 0; i < N; i++) {
+      const a = (i / N) * Math.PI * 2 - Math.PI / 2;
+      const sx = CX + R_SCR * Math.cos(a);
+      const sy = CY + R_SCR * Math.sin(a);
+      const isActive = running && i === phase;
+      ctx.fillStyle = isActive ? 'rgba(255,68,102,0.3)' : 'rgba(255,68,102,0.08)';
+      ctx.strokeStyle = isActive ? '#FF4466' : 'rgba(255,68,102,0.3)';
+      ctx.lineWidth = isActive ? 2 : 1;
+      ctx.beginPath(); ctx.roundRect(sx - 10, sy - 6, 20, 12, 2);
+      ctx.fill(); ctx.stroke();
+
+      // Connection line
+      const sp = solPos(i);
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sp.x, sp.y);
+      ctx.strokeStyle = isActive ? 'rgba(255,68,102,0.6)' : 'rgba(255,68,102,0.08)';
+      ctx.lineWidth = isActive ? 2 : 1; ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    // Solenoids
+    for (let i = 0; i < N; i++) {
+      const pos = solPos(i);
+      const isActive = running && i === phase;
+      const pulse = .5 + .5 * Math.sin(time * 8) * (isActive ? 1 : 0);
+
+      if (isActive) {
+        const g = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, 55);
+        g.addColorStop(0, `rgba(255,184,0,${.4 * pulse})`);
+        g.addColorStop(1, 'rgba(255,184,0,0)');
+        ctx.beginPath(); ctx.arc(pos.x, pos.y, 55, 0, Math.PI * 2);
+        ctx.fillStyle = g; ctx.fill();
+      }
+
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, 24, 0, Math.PI * 2);
+      ctx.fillStyle = isActive ? `rgba(255,184,0,${.15 + .1 * pulse})` : 'rgba(0,212,255,0.08)';
+      ctx.strokeStyle = isActive ? '#FFB800' : 'rgba(0,212,255,0.4)';
+      ctx.lineWidth = isActive ? 3 : 1.5; ctx.fill(); ctx.stroke();
+
+      // Windings
+      for (let w = -2; w <= 2; w++) {
+        ctx.beginPath();
+        ctx.ellipse(pos.x, pos.y, 17, 7, pos.a + Math.PI/2, 0, Math.PI * 2);
+        ctx.strokeStyle = isActive ? `rgba(255,184,0,.3)` : 'rgba(0,212,255,.15)';
+        ctx.lineWidth = 1; ctx.stroke();
+      }
+
+      ctx.fillStyle = isActive ? '#FFB800' : 'rgba(0,212,255,0.5)';
+      ctx.font = `700 9px Orbitron, monospace`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(`S${i+1}`, pos.x, pos.y);
+    }
+
+    // IR sensors
+    for (let i = 0; i < N; i++) {
+      const ir = irPos(i);
+      const isActive = running && i === phase;
+      const blink = isActive && Math.sin(time * 12) > 0;
+      ctx.beginPath(); ctx.arc(ir.x, ir.y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = blink ? '#00FF9D' : 'rgba(0,255,157,0.2)';
+      ctx.strokeStyle = '#00FF9D'; ctx.lineWidth = 1.5;
+      ctx.fill(); ctx.stroke();
+      if (blink) {
+        ctx.shadowColor = '#00FF9D'; ctx.shadowBlur = 15;
+        ctx.fill(); ctx.shadowBlur = 0;
+      }
+    }
+
+    // Pulses
+    pulses = pulses.filter(p => p.life > 0);
+    pulses.forEach(p => {
+      p.radius += 2.5; p.life -= 0.04;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,184,0,${p.life * 0.8})`; ctx.lineWidth = 2; ctx.stroke();
+    });
+
+    // Text flashes
+    textFlashes = textFlashes.filter(t => t.life > 0);
+    textFlashes.forEach(t => {
+      t.life -= 0.025; t.y -= .5;
+      ctx.fillStyle = `rgba(255,68,102,${t.life})`;
+      ctx.font = '700 9px Orbitron, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(t.text, t.x, t.y);
+    });
+
+    // Projectile
+    if (running) {
+      projAngle += projSpeed;
+      const px = CX + R * Math.cos(projAngle);
+      const py = CY + R * Math.sin(projAngle);
+      // Trail
+      for (let t = 1; t <= 16; t++) {
+        const ta = projAngle - t * .04;
+        const tx = CX + R * Math.cos(ta);
+        const ty = CY + R * Math.sin(ta);
+        ctx.beginPath(); ctx.arc(tx, ty, 5 - t * .25, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,136,204,${(16-t)/16*.5})`; ctx.fill();
+      }
+      const pg = ctx.createRadialGradient(px, py, 0, px, py, 9);
+      pg.addColorStop(0, '#fff'); pg.addColorStop(.3, '#ff88cc'); pg.addColorStop(1, 'transparent');
+      ctx.beginPath(); ctx.arc(px, py, 9, 0, Math.PI * 2);
+      ctx.fillStyle = pg; ctx.fill();
+    }
+
+    // Phase advance
+    if (running) {
+      phaseT++;
+      if (phaseT > 55) { phaseT = 0; nextPhase(); }
+    }
+
+    // Center
+    ctx.fillStyle = 'rgba(0,212,255,0.25)';
+    ctx.font = '700 10px Orbitron, monospace';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('ACELERADOR', CX, CY - 8);
+    ctx.fillStyle = 'rgba(0,212,255,0.15)';
+    ctx.font = '500 8px Share Tech Mono, monospace';
+    ctx.fillText('CIRCULAR · UAGRM', CX, CY + 8);
+    if (running) {
+      ctx.fillStyle = `rgba(255,68,102,${.6 + .4 * Math.sin(time * 6)})`;
+      ctx.font = '600 8px Orbitron, monospace';
+      ctx.fillText(`SCR-${phase+1} ACTIVO`, CX, CY + 24);
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  canvas.addEventListener('click', () => { running = !running; });
+})();
+</script>
+</body>
+</html>

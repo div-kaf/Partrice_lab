@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MÓDULO 3 · ANÁLISIS CINEMÁTICO Y DINÁMICO · UAGRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════════
+   SYSTEM CORE VARIABLES
+═══════════════════════════════════════════════════════ */
+:root {
+  --void: #00020a;
+  --cyan: #00D4FF;
+  --gold: #FFB800;
+  --cyan-dim: rgba(0,212,255,0.12);
+  --gold-dim: rgba(255,184,0,0.12);
+  --glass: rgba(0,8,20,0.85);
+  --glass-light: rgba(0,15,35,0.6);
+  --glow-cyan: 0 0 8px #00D4FF, 0 0 25px rgba(0,212,255,0.5), 0 0 60px rgba(0,212,255,0.15);
+  --glow-gold: 0 0 8px #FFB800, 0 0 25px rgba(255,184,0,0.5), 0 0 60px rgba(255,184,0,0.15);
+  --glow-text-cyan: 0 0 10px #00D4FF, 0 0 30px rgba(0,212,255,0.6);
+  --glow-text-gold: 0 0 10px #FFB800, 0 0 30px rgba(255,184,0,0.6);
+  --border-cyan: 1px solid rgba(0,212,255,0.35);
+  --border-gold: 1px solid rgba(255,184,0,0.35);
+  --font-title: 'Orbitron', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-body: 'Exo 2', sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--void);
+  color: #c8e8ff;
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  cursor: crosshair;
+  min-height: 100vh;
+}
+::selection { background: rgba(0,212,255,0.25); color: #fff; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #00020a; }
+::-webkit-scrollbar-thumb { background: var(--cyan); box-shadow: var(--glow-cyan); }
+
+/* ═══════════════════════════════════════════════════════
+   BACKGROUND CANVAS
+═══════════════════════════════════════════════════════ */
+#bg-canvas {
+  position: fixed; top:0; left:0;
+  width:100%; height:100%;
+  z-index: 0; pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+   LAYOUT WRAPPER
+═══════════════════════════════════════════════════════ */
+.wrapper {
+  position: relative; z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HEADER SECTION
+═══════════════════════════════════════════════════════ */
+.hero {
+  text-align: center;
+  padding: 60px 20px 40px;
+  position: relative;
+}
+.hero::before {
+  content:'';
+  position:absolute; top:0; left:50%;
+  transform: translateX(-50%);
+  width: 600px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), var(--gold), var(--cyan), transparent);
+  box-shadow: var(--glow-cyan);
+  animation: scanline 3s ease-in-out infinite;
+}
+@keyframes scanline {
+  0%,100%{ opacity:0.5; width:400px; } 50%{ opacity:1; width:700px; }
+}
+
+.module-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: var(--gold);
+  text-shadow: var(--glow-text-gold);
+  margin-bottom: 16px;
+  opacity: 0;
+  animation: fadeInUp 0.8s forwards 0.2s;
+}
+.hero-title {
+  font-family: var(--font-title);
+  font-weight: 900;
+  font-size: clamp(22px, 4vw, 42px);
+  letter-spacing: 6px;
+  color: var(--cyan);
+  text-shadow: var(--glow-text-cyan);
+  text-transform: uppercase;
+  line-height: 1.15;
+  margin-bottom: 12px;
+  opacity: 0;
+  animation: fadeInUp 0.8s forwards 0.4s;
+}
+.hero-sub {
+  font-family: var(--font-title);
+  font-size: clamp(10px, 2vw, 14px);
+  letter-spacing: 8px;
+  color: var(--gold);
+  text-shadow: var(--glow-text-gold);
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: fadeInUp 0.8s forwards 0.6s;
+}
+.hero-desc {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: rgba(200,232,255,0.7);
+  letter-spacing: 1px;
+  max-width: 680px;
+  margin: 0 auto 30px;
+  line-height: 1.8;
+  opacity: 0;
+  animation: fadeInUp 0.8s forwards 0.8s;
+}
+
+/* ═══════════════════════════════════════════════════════
+   STATUS BAR
+═══════════════════════════════════════════════════════ */
+.status-bar {
+  display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;
+  margin-bottom: 60px;
+  opacity: 0; animation: fadeInUp 0.8s forwards 1s;
+}
+.status-item {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: rgba(0,212,255,0.7);
+}
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: var(--glow-cyan);
+  animation: blink 1.5s infinite;
+}
+.status-dot.gold { background: var(--gold); box-shadow: var(--glow-gold); animation-delay: 0.5s; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* ═══════════════════════════════════════════════════════
+   SECTION HEADERS
+═══════════════════════════════════════════════════════ */
+.section-header {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 24px;
+}
+.section-header::before {
+  content: '';
+  width: 4px; height: 36px;
+  background: linear-gradient(180deg, var(--gold), var(--cyan));
+  box-shadow: 0 0 12px var(--cyan);
+  border-radius: 2px;
+}
+.section-title {
+  font-family: var(--font-title);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--cyan);
+  text-shadow: var(--glow-text-cyan);
+  text-transform: uppercase;
+}
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gold);
+  margin-left: auto;
+  opacity: 0.7;
+}
+
+/* ═══════════════════════════════════════════════════════
+   GLASS PANEL
+═══════════════════════════════════════════════════════ */
+.glass {
+  background: var(--glass);
+  border: var(--border-cyan);
+  border-radius: 2px;
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+}
+.glass::before {
+  content: '';
+  position: absolute; top:0; left:0; right:0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0.6;
+}
+.glass.gold-border { border-color: rgba(255,184,0,0.35); }
+.glass.gold-border::before { background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+
+/* ═══════════════════════════════════════════════════════
+   VARIABLES GRID
+═══════════════════════════════════════════════════════ */
+.vars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 50px;
+}
+.var-card {
+  padding: 24px;
+  position: relative;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.var-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--glow-cyan);
+}
+.var-card.gold-border:hover { box-shadow: var(--glow-gold); }
+.var-label {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 3px; color: var(--gold);
+  margin-bottom: 8px;
+}
+.var-symbol {
+  font-family: var(--font-title); font-size: 36px;
+  font-weight: 900; color: var(--cyan);
+  text-shadow: var(--glow-text-cyan);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.var-card.gold-border .var-symbol { color: var(--gold); text-shadow: var(--glow-text-gold); }
+.var-name {
+  font-family: var(--font-body); font-size: 13px;
+  color: rgba(200,232,255,0.7); margin-bottom: 12px;
+}
+.var-slider-wrap { position: relative; }
+.var-slider {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 3px;
+  border-radius: 2px;
+  background: rgba(0,212,255,0.15);
+  outline: none; cursor: pointer;
+}
+.var-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: var(--glow-cyan);
+  cursor: pointer;
+}
+.var-card.gold-border .var-slider { background: rgba(255,184,0,0.15); }
+.var-card.gold-border .var-slider::-webkit-slider-thumb { background: var(--gold); box-shadow: var(--glow-gold); }
+.var-value {
+  font-family: var(--font-mono); font-size: 22px;
+  color: var(--cyan); text-shadow: var(--glow-text-cyan);
+  text-align: right; margin-top: 8px;
+}
+.var-card.gold-border .var-value { color: var(--gold); text-shadow: var(--glow-text-gold); }
+.var-unit {
+  font-size: 12px; opacity: 0.6; margin-left: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SIMULATION CANVAS SECTION
+═══════════════════════════════════════════════════════ */
+.sim-container {
+  margin-bottom: 50px;
+}
+.sim-panel {
+  padding: 28px;
+}
+#sim-canvas {
+  width: 100%;
+  height: 300px;
+  border: var(--border-cyan);
+  border-radius: 2px;
+  background: rgba(0,5,15,0.95);
+  display: block;
+  cursor: pointer;
+}
+.sim-controls {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  margin-top: 20px; align-items: center;
+}
+.btn {
+  font-family: var(--font-title);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  padding: 12px 28px;
+  border: 1px solid var(--cyan);
+  background: transparent;
+  color: var(--cyan);
+  text-shadow: var(--glow-text-cyan);
+  box-shadow: var(--glow-cyan);
+  cursor: pointer;
+  border-radius: 2px;
+  text-transform: uppercase;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.btn::before {
+  content: '';
+  position: absolute; top:0; left:-100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0,212,255,0.15), transparent);
+  transition: left 0.5s;
+}
+.btn:hover::before { left: 100%; }
+.btn:hover {
+  background: rgba(0,212,255,0.08);
+  transform: scale(1.02);
+}
+.btn.gold {
+  border-color: var(--gold); color: var(--gold);
+  text-shadow: var(--glow-text-gold);
+  box-shadow: var(--glow-gold);
+}
+.btn.gold::before { background: linear-gradient(90deg, transparent, rgba(255,184,0,0.15), transparent); }
+.btn.gold:hover { background: rgba(255,184,0,0.08); }
+
+.sim-readout {
+  display: flex; gap: 24px; flex-wrap: wrap;
+  margin-top: 16px;
+}
+.readout-item {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(0,212,255,0.7);
+}
+.readout-item span { color: var(--cyan); font-size: 16px; }
+.readout-item.gold span { color: var(--gold); }
+
+/* gate progress */
+.gate-progress {
+  display: flex; gap: 8px; margin-top: 16px; align-items: center;
+}
+.gate-indicator {
+  width: 40px; height: 40px;
+  border: 1px solid rgba(0,212,255,0.3);
+  border-radius: 2px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 10px;
+  color: rgba(0,212,255,0.4);
+  transition: all 0.4s;
+  position: relative;
+  overflow: hidden;
+}
+.gate-indicator.active {
+  border-color: var(--gold);
+  color: var(--gold);
+  box-shadow: var(--glow-gold);
+  background: rgba(255,184,0,0.08);
+}
+.gate-indicator.passed {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  box-shadow: var(--glow-cyan);
+  background: rgba(0,212,255,0.08);
+}
+.gate-label {
+  font-family: var(--font-mono); font-size: 10px;
+  color: rgba(0,212,255,0.5);
+  letter-spacing: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CHART SECTION
+═══════════════════════════════════════════════════════ */
+.chart-section { margin-bottom: 50px; }
+.chart-panel { padding: 28px; }
+.chart-wrap {
+  position: relative;
+  height: 320px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MATH FORMULAS
+═══════════════════════════════════════════════════════ */
+.formulas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 50px;
+}
+.formula-card {
+  padding: 28px 24px;
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.formula-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 30px rgba(0,212,255,0.2);
+}
+.formula-card.gold-border:hover { box-shadow: 0 0 30px rgba(255,184,0,0.2); }
+.formula-label {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 4px; color: var(--gold);
+  margin-bottom: 16px;
+  text-shadow: var(--glow-text-gold);
+}
+.formula-display {
+  font-size: 22px; margin: 20px 0;
+  color: #fff;
+  min-height: 60px;
+  display: flex; align-items: center; justify-content: center;
+}
+.formula-desc {
+  font-family: var(--font-body); font-size: 12px;
+  color: rgba(200,232,255,0.6);
+  line-height: 1.7;
+  border-top: 1px solid rgba(0,212,255,0.15);
+  padding-top: 14px; margin-top: 14px;
+}
+.formula-result {
+  font-family: var(--font-mono);
+  font-size: 16px; color: var(--cyan);
+  text-shadow: var(--glow-text-cyan);
+  margin-top: 12px;
+}
+.formula-card.gold-border .formula-result { color: var(--gold); text-shadow: var(--glow-text-gold); }
+
+/* ═══════════════════════════════════════════════════════
+   ENERGY TABLE
+═══════════════════════════════════════════════════════ */
+.table-section { margin-bottom: 50px; }
+.table-panel { padding: 28px; }
+.data-table {
+  width: 100%; border-collapse: collapse;
+  font-family: var(--font-mono); font-size: 12px;
+}
+.data-table thead tr {
+  border-bottom: 1px solid rgba(0,212,255,0.3);
+}
+.data-table th {
+  font-family: var(--font-title); font-size: 9px;
+  letter-spacing: 3px; color: var(--cyan);
+  text-shadow: var(--glow-text-cyan);
+  padding: 14px 16px; text-align: left;
+  text-transform: uppercase;
+}
+.data-table td {
+  padding: 14px 16px;
+  color: rgba(200,232,255,0.8);
+  border-bottom: 1px solid rgba(0,212,255,0.06);
+  transition: all 0.3s;
+}
+.data-table tr:hover td {
+  background: rgba(0,212,255,0.04);
+  color: var(--cyan);
+}
+.data-table .td-gold { color: var(--gold); }
+.data-table .td-hi { color: var(--cyan); text-shadow: var(--glow-text-cyan); }
+.bar-cell { position: relative; }
+.bar-fill {
+  height: 3px; margin-top: 6px;
+  background: linear-gradient(90deg, var(--cyan), var(--gold));
+  box-shadow: var(--glow-cyan);
+  border-radius: 2px;
+  transition: width 1s ease;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ENERGY BALANCE GAUGES
+═══════════════════════════════════════════════════════ */
+.gauges-section { margin-bottom: 50px; }
+.gauges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.gauge-card {
+  padding: 24px;
+  text-align: center;
+}
+.gauge-svg { width: 140px; height: 140px; margin: 0 auto 12px; display: block; }
+.gauge-label {
+  font-family: var(--font-mono); font-size: 10px;
+  color: rgba(0,212,255,0.7); letter-spacing: 2px;
+}
+.gauge-val {
+  font-family: var(--font-title); font-size: 18px;
+  color: var(--cyan); text-shadow: var(--glow-text-cyan);
+  margin: 4px 0;
+}
+.gauge-unit { font-size: 10px; opacity: 0.5; }
+
+/* ═══════════════════════════════════════════════════════
+   TELEMETRY STRIP
+═══════════════════════════════════════════════════════ */
+.telemetry-strip {
+  font-family: var(--font-mono); font-size: 11px;
+  color: rgba(0,212,255,0.5);
+  border-top: 1px solid rgba(0,212,255,0.15);
+  border-bottom: 1px solid rgba(0,212,255,0.15);
+  padding: 10px 0;
+  overflow: hidden; white-space: nowrap;
+  margin-bottom: 50px;
+  position: relative;
+}
+.telemetry-inner {
+  display: inline-block;
+  animation: scrollLeft 30s linear infinite;
+}
+@keyframes scrollLeft {
+  from { transform: translateX(100vw); }
+  to   { transform: translateX(-100%); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════════ */
+.footer {
+  text-align: center;
+  padding: 40px 0 20px;
+  border-top: 1px solid rgba(0,212,255,0.1);
+}
+.footer-title {
+  font-family: var(--font-title); font-size: 10px;
+  letter-spacing: 5px; color: rgba(0,212,255,0.4);
+  margin-bottom: 8px;
+}
+.footer-sub {
+  font-family: var(--font-mono); font-size: 10px;
+  color: rgba(0,212,255,0.25);
+}
+
+/* ═══════════════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════════════ */
+@keyframes fadeInUp {
+  from { opacity:0; transform: translateY(24px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+@keyframes pulseGlow {
+  0%,100% { box-shadow: 0 0 8px var(--cyan), 0 0 20px rgba(0,212,255,0.3); }
+  50%     { box-shadow: 0 0 16px var(--cyan), 0 0 50px rgba(0,212,255,0.6); }
+}
+.reveal { opacity:0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
+.reveal.visible { opacity:1; transform: translateY(0); }
+
+/* ═══════════════════════════════════════════════════════
+   CORNER DECORATIONS
+═══════════════════════════════════════════════════════ */
+.glass::after {
+  content: '';
+  position: absolute;
+  top:0; right:0;
+  width: 20px; height: 20px;
+  border-top: 2px solid var(--gold);
+  border-right: 2px solid var(--gold);
+  opacity: 0.5;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MOUSE CURSOR GLOW
+═══════════════════════════════════════════════════════ */
+#cursor-glow {
+  position: fixed;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,212,255,0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: opacity 0.3s;
+}
+
+/* vertical divider lines */
+.vdivider {
+  width: 1px; background: linear-gradient(180deg, transparent, var(--cyan), transparent);
+  opacity: 0.3; align-self: stretch; flex-shrink: 0;
+}
+</style>
+</head>
+<body>
+
+<!-- CURSOR GLOW -->
+<div id="cursor-glow"></div>
+
+<!-- BACKGROUND PARTICLE FIELD -->
+<canvas id="bg-canvas"></canvas>
+
+<div class="wrapper">
+
+<!-- ══════════════════ HERO HEADER ══════════════════ -->
+<header class="hero">
+  <div class="module-badge">[ SISTEMA DE DIAGNÓSTICO AVANZADO · UAGRM · INGENIERÍA MECATRÓNICA ]</div>
+  <h1 class="hero-title">MÓDULO 3 · ANÁLISIS CINEMÁTICO Y DINÁMICO</h1>
+  <div class="hero-sub">ACELERADOR DE PARTÍCULAS · BALANCE ENERGÉTICO POR ETAPAS</div>
+  <p class="hero-desc">
+    Estudio del balance energético y aceleración progresiva por bobinas coaxiales. 
+    Motor de simulación en tiempo real con telemetría de velocidad, vectores de impulso 
+    y análisis de conversión energética en cada etapa de aceleración magnética.
+  </p>
+
+  <div class="status-bar">
+    <div class="status-item"><div class="status-dot"></div>SIMULADOR ACTIVO</div>
+    <div class="status-item"><div class="status-dot gold"></div>TELEMETRÍA EN VIVO</div>
+    <div class="status-item"><div class="status-dot"></div>6 COMPUERTAS MAGNÉTICAS</div>
+    <div class="status-item"><div class="status-dot gold"></div>ANÁLISIS ENERGÉTICO</div>
+    <div class="status-item"><div class="status-dot"></div>UAGRM · DEFENSA ELIT</div>
+  </div>
+</header>
+
+<!-- ══════════════════ TELEMETRY STRIP ══════════════════ -->
+<div class="telemetry-strip">
+  <div class="telemetry-inner">
+    SYS_STATUS: NOMINAL &nbsp;·&nbsp; MÓDULO_3 CARGADO &nbsp;·&nbsp; V_MAX: 847.3 m/s &nbsp;·&nbsp; E_CINÉTICA: 3.584 J &nbsp;·&nbsp; CAMPO_B: 1.42 T &nbsp;·&nbsp;
+    TEMP_BOBINA: 312 K &nbsp;·&nbsp; EFICIENCIA: 94.7% &nbsp;·&nbsp; CICLOS_SIM: 0x3F8A &nbsp;·&nbsp; CARGA_CPU: 18% &nbsp;·&nbsp;
+    LAT: -17.7840° · LON: -63.1812° · UAGRM SANTA CRUZ DE LA SIERRA &nbsp;·&nbsp; ACELERADOR COAXIAL MULTICOMPUTADORA &nbsp;·&nbsp;
+    Δv_PROMEDIO: +141.2 m/s/ETAPA &nbsp;·&nbsp; E_ALMACENADA: 4.5 kJ &nbsp;·&nbsp; PROTOCOLO: ISO-9001 ELITE &nbsp;·&nbsp; [SIM_LOOP ACTIVO]
+  </div>
+</div>
+
+<!-- ══════════════════ VARIABLES SECTION ══════════════════ -->
+<section class="reveal">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Variables del Sistema</div>
+    </div>
+    <div class="section-num">§ 3.1</div>
+  </div>
+
+  <div class="vars-grid">
+    <div class="var-card glass">
+      <div class="var-label">VOLTAJE DE CARGA</div>
+      <div class="var-symbol">V</div>
+      <div class="var-name">Tensión en el banco de capacitores</div>
+      <input class="var-slider" type="range" min="100" max="500" value="300" id="sl-volt">
+      <div class="var-value"><span id="val-volt">300</span><span class="var-unit">V</span></div>
+    </div>
+    <div class="var-card glass gold-border">
+      <div class="var-label">CAPACITANCIA</div>
+      <div class="var-symbol">C</div>
+      <div class="var-name">Capacidad del banco energético</div>
+      <input class="var-slider" type="range" min="10" max="200" value="100" id="sl-cap">
+      <div class="var-value"><span id="val-cap">100</span><span class="var-unit">μF</span></div>
+    </div>
+    <div class="var-card glass">
+      <div class="var-label">MASA DEL PROYECTIL</div>
+      <div class="var-symbol">m</div>
+      <div class="var-name">Masa del proyectil ferromagnético</div>
+      <input class="var-slider" type="range" min="1" max="50" value="10" id="sl-mass">
+      <div class="var-value"><span id="val-mass">10</span><span class="var-unit">g</span></div>
+    </div>
+    <div class="var-card glass gold-border">
+      <div class="var-label">VELOCIDAD INICIAL</div>
+      <div class="var-symbol">v₀</div>
+      <div class="var-name">Velocidad de inyección al tubo</div>
+      <input class="var-slider" type="range" min="0" max="100" value="20" id="sl-v0">
+      <div class="var-value"><span id="val-v0">20</span><span class="var-unit">m/s</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ MAIN SIMULATION ══════════════════ -->
+<section class="sim-container reveal">
+  <div class="section-header">
+    <div><div class="section-title">Motor de Simulación — Aceleración por Etapas</div></div>
+    <div class="section-num">§ 3.2</div>
+  </div>
+
+  <div class="glass sim-panel">
+    <canvas id="sim-canvas" width="1200" height="300"></canvas>
+
+    <div class="sim-controls">
+      <button class="btn" id="btn-launch">⚡ LANZAR PROYECTIL</button>
+      <button class="btn gold" id="btn-reset">↺ REINICIAR</button>
+      <div style="margin-left:auto; font-family:var(--font-mono); font-size:10px; color:rgba(0,212,255,0.5)">
+        HAGA CLIC EN EL CANVAS PARA INTERACTUAR
+      </div>
+    </div>
+
+    <div class="sim-readout">
+      <div class="readout-item">VELOCIDAD: <span id="rd-vel">0</span> m/s</div>
+      <div class="readout-item">ETAPA: <span id="rd-stage">0/6</span></div>
+      <div class="readout-item gold">E. CINÉTICA: <span id="rd-ek">0</span> J</div>
+      <div class="readout-item">Δv: <span id="rd-dv">+0</span> m/s</div>
+    </div>
+
+    <div style="margin-top:16px; font-family:var(--font-mono); font-size:10px; color:rgba(0,212,255,0.5); letter-spacing:2px; margin-bottom:8px;">
+      COMPUERTAS MAGNÉTICAS — ESTADO
+    </div>
+    <div class="gate-progress" id="gates">
+      <div class="gate-indicator" data-g="0">G1</div>
+      <div class="gate-indicator" data-g="1">G2</div>
+      <div class="gate-indicator" data-g="2">G3</div>
+      <div class="gate-indicator" data-g="3">G4</div>
+      <div class="gate-indicator" data-g="4">G5</div>
+      <div class="gate-indicator" data-g="5">G6</div>
+      <div class="vdivider" style="margin:0 12px"></div>
+      <div class="gate-label">SECUENCIA DE ACELERACIÓN MAGNÉTICA</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ CHART TELEMETRY ══════════════════ -->
+<section class="chart-section reveal">
+  <div class="section-header">
+    <div><div class="section-title">Telemetría de Velocidad — Saltos por Bobina</div></div>
+    <div class="section-num">§ 3.3</div>
+  </div>
+  <div class="glass chart-panel">
+    <div class="chart-wrap">
+      <canvas id="vel-chart"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ MATH FORMULAS ══════════════════ -->
+<section class="reveal">
+  <div class="section-header">
+    <div><div class="section-title">Marco Matemático — Fundamentos Energéticos</div></div>
+    <div class="section-num">§ 3.4</div>
+  </div>
+
+  <div class="formulas-grid">
+    <div class="formula-card glass">
+      <div class="formula-label">ENERGÍA ALMACENADA EN CAPACITOR</div>
+      <div class="formula-display" id="f1">\( E = \dfrac{1}{2} C V^2 \)</div>
+      <div class="formula-desc">
+        La energía electrostática almacenada en el banco de capacitores determina 
+        el impulso máximo entregable a cada etapa del acelerador.
+      </div>
+      <div class="formula-result" id="res-ec">E = — J</div>
+    </div>
+    <div class="formula-card glass gold-border">
+      <div class="formula-label">ENERGÍA CINÉTICA DEL PROYECTIL</div>
+      <div class="formula-display" id="f2">\( K = \dfrac{1}{2} m v^2 \)</div>
+      <div class="formula-desc">
+        Energía cinética adquirida por el proyectil ferromagnético tras la 
+        conversión electromagnética en cada bobina coaxial de aceleración.
+      </div>
+      <div class="formula-result" id="res-ek">K = — J</div>
+    </div>
+    <div class="formula-card glass">
+      <div class="formula-label">IMPULSO ELECTROMAGNÉTICO</div>
+      <div class="formula-display">\( F = \nabla (m \cdot \vec{B}) \)</div>
+      <div class="formula-desc">
+        La fuerza sobre el proyectil depende del gradiente del campo magnético 
+        y del momento magnético inducido en el material ferromagnético.
+      </div>
+      <div class="formula-result" id="res-f">η = — %</div>
+    </div>
+    <div class="formula-card glass gold-border">
+      <div class="formula-label">BALANCE ENERGÉTICO TOTAL</div>
+      <div class="formula-display">\( \eta = \dfrac{K}{E} \times 100\% \)</div>
+      <div class="formula-desc">
+        Eficiencia de conversión energética: relación entre la energía cinética 
+        del proyectil y la energía total suministrada por el capacitor.
+      </div>
+      <div class="formula-result" id="res-eta">Δv = — m/s</div>
+    </div>
+    <div class="formula-card glass">
+      <div class="formula-label">VELOCIDAD FINAL POR ETAPAS</div>
+      <div class="formula-display">\( v_n = \sqrt{v_{n-1}^2 + \frac{2\eta E_n}{m}} \)</div>
+      <div class="formula-desc">
+        Velocidad acumulada tras n etapas de aceleración, considerando la eficiencia 
+        de conversión η por etapa y la energía E_n de cada disparo.
+      </div>
+      <div class="formula-result" id="res-vn">v₆ = — m/s</div>
+    </div>
+    <div class="formula-card glass gold-border">
+      <div class="formula-label">PRESIÓN DE RADIACIÓN MAGNÉTICA</div>
+      <div class="formula-display">\( P = \dfrac{B^2}{2\mu_0} \)</div>
+      <div class="formula-desc">
+        Presión ejercida por el campo magnético en la región de la bobina activa, 
+        relacionada directamente con la densidad de energía del campo.
+      </div>
+      <div class="formula-result" id="res-p">B = 1.42 T</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ ENERGY TABLE ══════════════════ -->
+<section class="table-section reveal">
+  <div class="section-header">
+    <div><div class="section-title">Tabla de Energía y Velocidad por Etapa</div></div>
+    <div class="section-num">§ 3.5</div>
+  </div>
+  <div class="glass table-panel">
+    <table class="data-table" id="energy-table">
+      <thead>
+        <tr>
+          <th>ETAPA</th>
+          <th>V BOBINA (V)</th>
+          <th>E. ELÉCTRICA (J)</th>
+          <th>Δv (m/s)</th>
+          <th>v FINAL (m/s)</th>
+          <th>E. CINÉTICA (J)</th>
+          <th>EFICIENCIA (%)</th>
+          <th>PROGRESO</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════ GAUGE SECTION ══════════════════ -->
+<section class="gauges-section reveal">
+  <div class="section-header">
+    <div><div class="section-title">Indicadores de Balance Energético</div></div>
+    <div class="section-num">§ 3.6</div>
+  </div>
+  <div class="gauges-grid" id="gauges-grid">
+    <!-- filled by JS -->
+  </div>
+</section>
+
+<!-- ══════════════════ FOOTER ══════════════════ -->
+<footer class="footer">
+  <div class="footer-title">UNIVERSIDAD AUTÓNOMA GABRIEL RENÉ MORENO · INGENIERÍA MECATRÓNICA</div>
+  <div class="footer-sub">MÓDULO 3 · ANÁLISIS CINEMÁTICO Y DINÁMICO · DEFENSA DE PROYECTOS DE GRADO · SYS_BUILD 3.7.2077</div>
+</footer>
+
+</div><!-- /wrapper -->
+
+<!-- ══════════════════════════════════════════════════════
+     JAVASCRIPT ENGINE
+══════════════════════════════════════════════════════ -->
+<script>
+/* ── CURSOR GLOW ── */
+const cursorGlow = document.getElementById('cursor-glow');
+let mouseX=0,mouseY=0;
+document.addEventListener('mousemove', e=>{
+  mouseX=e.clientX; mouseY=e.clientY;
+  cursorGlow.style.left=mouseX+'px';
+  cursorGlow.style.top=mouseY+'px';
+});
+
+/* ── SCROLL REVEAL ── */
+const reveals = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.1});
+reveals.forEach(r=>obs.observe(r));
+
+/* ══════════════════════════════════════════════════════
+   BACKGROUND PARTICLE ENGINE
+══════════════════════════════════════════════════════ */
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+let W,H,particles=[],fluxLines=[];
+let scrollY=0, mX=0.5, mY=0.5;
+
+function initBG(){
+  W=bgCanvas.width=window.innerWidth;
+  H=bgCanvas.height=window.innerHeight;
+  particles=[];
+  for(let i=0;i<180;i++){
+    particles.push({
+      x:Math.random()*W, y:Math.random()*H,
+      vx:(Math.random()-0.5)*0.4, vy:(Math.random()-0.5)*0.4,
+      r:Math.random()*1.8+0.3,
+      alpha:Math.random()*0.6+0.1,
+      color:Math.random()>0.6?'#FFB800':'#00D4FF',
+      life:Math.random()*200
+    });
+  }
+  fluxLines=[];
+  for(let i=0;i<20;i++){
+    fluxLines.push({
+      x:Math.random()*W,
+      y:Math.random()*H,
+      len:Math.random()*120+60,
+      angle:Math.random()*Math.PI*2,
+      speed:Math.random()*0.005+0.002,
+      alpha:Math.random()*0.15+0.05
+    });
+  }
+}
+window.addEventListener('resize',initBG);
+window.addEventListener('scroll',()=>{ scrollY=window.scrollY; });
+document.addEventListener('mousemove',e=>{ mX=e.clientX/W; mY=e.clientY/H; });
+
+function drawBG(){
+  bgCtx.clearRect(0,0,W,H);
+
+  // Flux lines (magnetic field visualization)
+  fluxLines.forEach(fl=>{
+    fl.angle+=fl.speed+(mX-0.5)*0.01;
+    const ex=fl.x+Math.cos(fl.angle)*fl.len;
+    const ey=fl.y+Math.sin(fl.angle)*fl.len;
+    const grad=bgCtx.createLinearGradient(fl.x,fl.y,ex,ey);
+    grad.addColorStop(0,'rgba(0,212,255,0)');
+    grad.addColorStop(0.5,`rgba(0,212,255,${fl.alpha})`);
+    grad.addColorStop(1,'rgba(0,212,255,0)');
+    bgCtx.beginPath();
+    bgCtx.moveTo(fl.x,fl.y);
+    bgCtx.lineTo(ex,ey);
+    bgCtx.strokeStyle=grad;
+    bgCtx.lineWidth=0.5;
+    bgCtx.stroke();
+  });
+
+  // Particles
+  particles.forEach(p=>{
+    // slight mouse attraction
+    const dx=mX*W-p.x, dy=mY*H-p.y;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<250){ p.vx+=dx/dist*0.008; p.vy+=dy/dist*0.008; }
+    p.x+=p.vx; p.y+=p.vy+(scrollY-scrollY)*0.001;
+    if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+    if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+    // speed cap
+    const spd=Math.sqrt(p.vx*p.vx+p.vy*p.vy);
+    if(spd>1.5){ p.vx*=0.95; p.vy*=0.95; }
+    bgCtx.beginPath();
+    bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    bgCtx.fillStyle=p.color.replace(')',`,${p.alpha})`).replace('rgb','rgba').replace('#00D4FF',`rgba(0,212,255,${p.alpha})`).replace('#FFB800',`rgba(255,184,0,${p.alpha})`);
+    // color fix
+    bgCtx.fillStyle = p.color==='#FFB800'?`rgba(255,184,0,${p.alpha})`:`rgba(0,212,255,${p.alpha})`;
+    bgCtx.fill();
+  });
+
+  requestAnimationFrame(drawBG);
+}
+initBG(); drawBG();
+
+/* ══════════════════════════════════════════════════════
+   SIMULATION ENGINE
+══════════════════════════════════════════════════════ */
+const simCanvas = document.getElementById('sim-canvas');
+const sCtx = simCanvas.getContext('2d');
+const SW=simCanvas.width, SH=simCanvas.height;
+
+const GATES = 6;
+const ETA = 0.18; // conversion efficiency per stage
+
+let simState = {
+  running:false, completed:false,
+  projX:0, projY:SH/2,
+  vel:0, stage:0,
+  velHistory:[],
+  pulses:[],
+  trails:[],
+  particles:[]
+};
+
+function getParams(){
+  const V=+document.getElementById('sl-volt').value;
+  const C=+document.getElementById('sl-cap').value*1e-6;
+  const m=+document.getElementById('sl-mass').value*1e-3;
+  const v0=+document.getElementById('sl-v0').value;
+  return {V,C,m,v0,
+    Estored: 0.5*C*V*V,
+    gateX: i=> 80 + (i+1)*(SW-140)/(GATES+1)
+  };
+}
+
+function gateVoltage(stage,V){
+  // Each gate gets slightly less voltage (realistic discharge)
+  return V*(1 - stage*0.03);
+}
+
+function stageVelocity(v_prev,V,C,m,stage){
+  const Vg=gateVoltage(stage,V);
+  const Eg=0.5*C*Vg*Vg;
+  const dv2=2*ETA*Eg/m;
+  return Math.sqrt(v_prev*v_prev + dv2);
+}
+
+function spawnPulse(gx,gy){
+  for(let i=0;i<30;i++){
+    const angle=Math.random()*Math.PI*2;
+    const spd=Math.random()*4+1;
+    simState.pulses.push({
+      x:gx,y:gy,
+      vx:Math.cos(angle)*spd,
+      vy:Math.sin(angle)*spd,
+      life:1, decay:Math.random()*0.04+0.02,
+      r:Math.random()*3+1,
+      color:Math.random()>0.4?'255,184,0':'0,212,255'
+    });
+  }
+}
+
+function drawSim(){
+  const p=getParams();
+  sCtx.clearRect(0,0,SW,SH);
+
+  // Background grid
+  sCtx.strokeStyle='rgba(0,212,255,0.04)';
+  sCtx.lineWidth=0.5;
+  for(let x=0;x<SW;x+=60){ sCtx.beginPath();sCtx.moveTo(x,0);sCtx.lineTo(x,SH);sCtx.stroke(); }
+  for(let y=0;y<SH;y+=40){ sCtx.beginPath();sCtx.moveTo(0,y);sCtx.lineTo(SW,y);sCtx.stroke(); }
+
+  // Barrel tube
+  const tubeY=SH/2-18, tubeH=36;
+  const grad=sCtx.createLinearGradient(0,tubeY,0,tubeY+tubeH);
+  grad.addColorStop(0,'rgba(0,212,255,0.25)');
+  grad.addColorStop(0.5,'rgba(0,30,60,0.6)');
+  grad.addColorStop(1,'rgba(0,212,255,0.25)');
+  sCtx.fillStyle=grad;
+  sCtx.fillRect(40,tubeY,SW-80,tubeH);
+  sCtx.strokeStyle='rgba(0,212,255,0.5)';
+  sCtx.lineWidth=1;
+  sCtx.strokeRect(40,tubeY,SW-80,tubeH);
+
+  // Draw gates
+  for(let i=0;i<GATES;i++){
+    const gx=p.gateX(i);
+    const passed=simState.stage>i;
+    const active=simState.stage===i && simState.running;
+    const col=active?'255,184,0':passed?'0,212,255':'100,160,200';
+    const glow=active?20:passed?10:0;
+
+    if(glow>0){
+      sCtx.shadowBlur=glow;
+      sCtx.shadowColor=active?'#FFB800':'#00D4FF';
+    }
+    // Gate coil visual
+    sCtx.strokeStyle=`rgba(${col},${active?1:passed?0.8:0.35})`;
+    sCtx.lineWidth=active?3:2;
+    sCtx.beginPath(); sCtx.moveTo(gx,tubeY-25); sCtx.lineTo(gx,tubeY); sCtx.stroke();
+    sCtx.beginPath(); sCtx.moveTo(gx,tubeY+tubeH); sCtx.lineTo(gx,tubeY+tubeH+25); sCtx.stroke();
+
+    // Coil wraps
+    for(let w=0;w<4;w++){
+      const wy=tubeY-20+w*8;
+      sCtx.strokeStyle=`rgba(${col},0.5)`;
+      sCtx.lineWidth=1;
+      sCtx.beginPath();
+      sCtx.ellipse(gx,wy,6,3,0,0,Math.PI*2);
+      sCtx.stroke();
+    }
+    for(let w=0;w<4;w++){
+      const wy=tubeY+tubeH+5+w*8;
+      sCtx.strokeStyle=`rgba(${col},0.5)`;
+      sCtx.lineWidth=1;
+      sCtx.beginPath();
+      sCtx.ellipse(gx,wy,6,3,0,0,Math.PI*2);
+      sCtx.stroke();
+    }
+
+    // Gate label
+    sCtx.shadowBlur=0;
+    sCtx.fillStyle=`rgba(${col},0.9)`;
+    sCtx.font=`bold 10px 'Share Tech Mono'`;
+    sCtx.textAlign='center';
+    sCtx.fillText(`G${i+1}`,gx,SH-18);
+
+    // Velocity label if passed
+    if(passed&&simState.velHistory[i]){
+      sCtx.fillStyle='rgba(0,212,255,0.7)';
+      sCtx.font=`9px 'Share Tech Mono'`;
+      sCtx.fillText(`${Math.round(simState.velHistory[i])} m/s`,gx,tubeY-32);
+    }
+
+    // Active magnetic field visualization
+    if(active){
+      const t=Date.now()*0.003;
+      for(let r=1;r<=3;r++){
+        sCtx.strokeStyle=`rgba(255,184,0,${0.3-r*0.08})`;
+        sCtx.lineWidth=0.5;
+        sCtx.beginPath();
+        sCtx.ellipse(gx,SH/2,r*18,r*6,0,0,Math.PI*2);
+        sCtx.stroke();
+      }
+    }
+  }
+  sCtx.shadowBlur=0;
+
+  // Trails
+  simState.trails.forEach(t=>{
+    sCtx.beginPath();
+    sCtx.arc(t.x,t.y,t.r,0,Math.PI*2);
+    sCtx.fillStyle=`rgba(0,212,255,${t.alpha})`;
+    sCtx.fill();
+    t.alpha-=0.012; t.r*=0.96;
+  });
+  simState.trails=simState.trails.filter(t=>t.alpha>0);
+
+  // Energy pulses
+  simState.pulses.forEach(pu=>{
+    sCtx.beginPath();
+    sCtx.arc(pu.x,pu.y,pu.r,0,Math.PI*2);
+    sCtx.fillStyle=`rgba(${pu.color},${pu.life})`;
+    sCtx.fill();
+    pu.x+=pu.vx; pu.y+=pu.vy;
+    pu.vx*=0.93; pu.vy*=0.93;
+    pu.life-=pu.decay;
+  });
+  simState.pulses=simState.pulses.filter(pu=>pu.life>0);
+
+  // Projectile
+  if(simState.projX>0){
+    const px=simState.projX, py=simState.projY;
+    // Glow
+    sCtx.shadowBlur=30; sCtx.shadowColor='#00D4FF';
+    const pgrad=sCtx.createRadialGradient(px,py,1,px,py,12);
+    pgrad.addColorStop(0,'rgba(255,255,255,0.95)');
+    pgrad.addColorStop(0.4,'rgba(0,212,255,0.8)');
+    pgrad.addColorStop(1,'rgba(0,212,255,0)');
+    sCtx.fillStyle=pgrad;
+    sCtx.beginPath();
+    sCtx.arc(px,py,12,0,Math.PI*2);
+    sCtx.fill();
+    sCtx.shadowBlur=0;
+
+    // Velocity vector
+    if(simState.vel>0){
+      const vecLen=Math.min(simState.vel/2,80);
+      sCtx.strokeStyle='rgba(255,184,0,0.8)';
+      sCtx.lineWidth=2;
+      sCtx.setLineDash([4,2]);
+      sCtx.beginPath(); sCtx.moveTo(px,py); sCtx.lineTo(px+vecLen,py); sCtx.stroke();
+      sCtx.setLineDash([]);
+      // arrowhead
+      sCtx.fillStyle='rgba(255,184,0,0.9)';
+      sCtx.beginPath();
+      sCtx.moveTo(px+vecLen,py);
+      sCtx.lineTo(px+vecLen-8,py-4);
+      sCtx.lineTo(px+vecLen-8,py+4);
+      sCtx.closePath(); sCtx.fill();
+    }
+
+    // Trail spawn
+    simState.trails.push({x:px-6,y:py,r:Math.random()*4+2,alpha:0.4+Math.random()*0.3});
+  }
+
+  // Readouts overlay
+  sCtx.fillStyle='rgba(0,212,255,0.9)';
+  sCtx.font=`bold 11px 'Share Tech Mono'`;
+  sCtx.textAlign='left';
+  if(simState.completed){
+    sCtx.fillStyle='rgba(255,184,0,0.95)';
+    sCtx.font=`bold 14px 'Orbitron'`;
+    sCtx.fillText('◆ SECUENCIA COMPLETADA — v_max = '+Math.round(simState.vel)+' m/s', 60, 30);
+  }
+}
+
+let simAnimId=null;
+function simLoop(){
+  if(!simState.running) return;
+  const p=getParams();
+
+  // Move projectile
+  const speed=simState.vel*0.6; // px/frame scale
+  simState.projX+=Math.max(speed,3);
+
+  // Check gates
+  for(let i=simState.stage;i<GATES;i++){
+    const gx=p.gateX(i);
+    if(simState.projX>=gx && simState.stage===i){
+      // Pass through gate
+      const newVel=stageVelocity(simState.vel,p.V,p.C,p.m,i);
+      const dv=newVel-simState.vel;
+      simState.vel=newVel;
+      simState.velHistory.push(newVel);
+      simState.stage++;
+
+      // Update gate indicators
+      document.querySelectorAll('.gate-indicator').forEach((g,idx)=>{
+        if(idx<simState.stage) g.classList.add('passed');
+        if(idx===simState.stage) g.classList.add('active');
+      });
+
+      // Pulse effect
+      spawnPulse(gx,SH/2);
+
+      // Update readouts
+      document.getElementById('rd-vel').textContent=Math.round(simState.vel);
+      document.getElementById('rd-stage').textContent=simState.stage+'/'+GATES;
+      document.getElementById('rd-ek').textContent=(0.5*p.m*simState.vel*simState.vel).toFixed(2);
+      document.getElementById('rd-dv').textContent='+'+Math.round(dv);
+
+      updateChart();
+      updateFormulas();
+      break;
+    }
+  }
+
+  // Check completion
+  if(simState.projX>SW-40){
+    simState.running=false;
+    simState.completed=true;
+    document.getElementById('rd-stage').textContent='COMPLETO';
+    updateTable();
+  }
+
+  drawSim();
+  simAnimId=requestAnimationFrame(simLoop);
+}
+
+document.getElementById('btn-launch').addEventListener('click',()=>{
+  if(simState.running) return;
+  const p=getParams();
+  simState={
+    running:true, completed:false,
+    projX:50, projY:SH/2,
+    vel:p.v0, stage:0,
+    velHistory:[p.v0],
+    pulses:[], trails:[], particles:[]
+  };
+  document.querySelectorAll('.gate-indicator').forEach(g=>{
+    g.classList.remove('active','passed');
+  });
+  document.getElementById('rd-vel').textContent=Math.round(p.v0);
+  document.getElementById('rd-stage').textContent='0/'+GATES;
+  document.getElementById('rd-ek').textContent=(0.5*p.m*p.v0*p.v0).toFixed(2);
+  document.getElementById('rd-dv').textContent='+0';
+  if(simAnimId) cancelAnimationFrame(simAnimId);
+  simLoop();
+});
+
+document.getElementById('btn-reset').addEventListener('click',()=>{
+  simState.running=false; simState.completed=false;
+  simState.projX=0; simState.vel=0; simState.stage=0;
+  simState.velHistory=[]; simState.pulses=[]; simState.trails=[];
+  document.querySelectorAll('.gate-indicator').forEach(g=>g.classList.remove('active','passed'));
+  document.getElementById('rd-vel').textContent='0';
+  document.getElementById('rd-stage').textContent='0/'+GATES;
+  document.getElementById('rd-ek').textContent='0';
+  document.getElementById('rd-dv').textContent='+0';
+  drawSim();
+  resetChart();
+  updateFormulas();
+});
+
+// Initial draw
+drawSim();
+
+/* ══════════════════════════════════════════════════════
+   VELOCITY CHART (Chart.js)
+══════════════════════════════════════════════════════ */
+const velCtx=document.getElementById('vel-chart').getContext('2d');
+const chartLabels=['Inicio','G1','G2','G3','G4','G5','G6'];
+const gradLine=velCtx.createLinearGradient(0,0,0,320);
+gradLine.addColorStop(0,'rgba(0,212,255,0.8)');
+gradLine.addColorStop(1,'rgba(255,184,0,0.3)');
+
+const bgGrad=velCtx.createLinearGradient(0,0,0,320);
+bgGrad.addColorStop(0,'rgba(0,212,255,0.15)');
+bgGrad.addColorStop(1,'rgba(0,212,255,0)');
+
+let velChart=new Chart(velCtx,{
+  type:'line',
+  data:{
+    labels:chartLabels,
+    datasets:[{
+      label:'Velocidad (m/s)',
+      data:[null,null,null,null,null,null,null],
+      borderColor:gradLine,
+      backgroundColor:bgGrad,
+      borderWidth:2.5,
+      tension:0.4,
+      fill:true,
+      pointBackgroundColor:ctx=>{
+        const i=ctx.dataIndex;
+        return i===0?'#c8e8ff':i===6?'#FFB800':'#00D4FF';
+      },
+      pointBorderColor:ctx=>{
+        const i=ctx.dataIndex;
+        return i===6?'#FFB800':'#00D4FF';
+      },
+      pointRadius:6,
+      pointHoverRadius:10,
+      pointShadowOffsetX:0,
+      pointShadowOffsetY:0,
+      pointShadowBlur:10,
+      pointShadowColor:'#00D4FF'
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    animation:{ duration:600, easing:'easeInOutQuart' },
+    plugins:{
+      legend:{ display:false },
+      tooltip:{
+        backgroundColor:'rgba(0,8,20,0.95)',
+        borderColor:'rgba(0,212,255,0.5)',
+        borderWidth:1,
+        titleColor:'#00D4FF',
+        bodyColor:'rgba(200,232,255,0.8)',
+        padding:12,
+        callbacks:{
+          label:ctx=>`v = ${Math.round(ctx.parsed.y)} m/s`
+        }
+      }
+    },
+    scales:{
+      x:{
+        grid:{ color:'rgba(0,212,255,0.07)', lineWidth:0.5 },
+        ticks:{ color:'rgba(0,212,255,0.6)', font:{ family:"'Share Tech Mono'", size:11 } },
+        border:{ color:'rgba(0,212,255,0.2)' }
+      },
+      y:{
+        grid:{ color:'rgba(0,212,255,0.07)', lineWidth:0.5 },
+        ticks:{ color:'rgba(0,212,255,0.6)', font:{ family:"'Share Tech Mono'", size:11 },
+          callback:v=>v+' m/s' },
+        border:{ color:'rgba(0,212,255,0.2)' }
+      }
+    }
+  }
+});
+
+function updateChart(){
+  const p=getParams();
+  // Recompute full velocity sequence
+  const vSeq=[p.v0];
+  for(let i=0;i<GATES;i++){
+    vSeq.push(stageVelocity(vSeq[vSeq.length-1],p.V,p.C,p.m,i));
+  }
+  velChart.data.datasets[0].data=vSeq.slice(0,simState.stage+1).concat(
+    Array(GATES+1-simState.stage-1).fill(null)
+  );
+  velChart.update();
+}
+
+function resetChart(){
+  velChart.data.datasets[0].data=Array(7).fill(null);
+  velChart.update();
+}
+
+/* ══════════════════════════════════════════════════════
+   SLIDERS → Live Update
+══════════════════════════════════════════════════════ */
+['volt','cap','mass','v0'].forEach(id=>{
+  document.getElementById('sl-'+id).addEventListener('input',function(){
+    document.getElementById('val-'+id).textContent=this.value;
+    updateFormulas();
+    updateTable();
+    buildGauges();
+    drawSim();
+  });
+});
+
+function updateFormulas(){
+  const p=getParams();
+  const Ec=p.Estored;
+  const vFinal=computeFinalVel(p);
+  const Ek=0.5*p.m*vFinal*vFinal;
+  const eta=(Ek/Ec*100);
+  const dv=vFinal-p.v0;
+
+  document.getElementById('res-ec').textContent=`E = ${Ec.toFixed(3)} J`;
+  document.getElementById('res-ek').textContent=`K = ${Ek.toFixed(3)} J`;
+  document.getElementById('res-f').textContent=`η = ${eta.toFixed(1)}%`;
+  document.getElementById('res-eta').textContent=`Δv = ${dv.toFixed(1)} m/s`;
+  document.getElementById('res-vn').textContent=`v₆ = ${vFinal.toFixed(1)} m/s`;
+}
+
+function computeFinalVel(p){
+  let v=p.v0;
+  for(let i=0;i<GATES;i++) v=stageVelocity(v,p.V,p.C,p.m,i);
+  return v;
+}
+
+function computeVelSequence(p){
+  const seq=[p.v0];
+  let v=p.v0;
+  for(let i=0;i<GATES;i++){
+    v=stageVelocity(v,p.V,p.C,p.m,i);
+    seq.push(v);
+  }
+  return seq;
+}
+
+/* ══════════════════════════════════════════════════════
+   ENERGY TABLE
+══════════════════════════════════════════════════════ */
+function updateTable(){
+  const p=getParams();
+  const seq=computeVelSequence(p);
+  const tbody=document.getElementById('table-body');
+  tbody.innerHTML='';
+  const vMax=seq[GATES];
+
+  for(let i=0;i<GATES;i++){
+    const Vg=gateVoltage(i,p.V);
+    const Eg=0.5*p.C*1e-6*Vg*Vg; // wait -- C is already in F from getParams
+    // recalculate properly
+    const Vc2=gateVoltage(i,p.V);
+    const Ec2=0.5*(+document.getElementById('sl-cap').value*1e-6)*Vc2*Vc2;
+    const dv=seq[i+1]-seq[i];
+    const Ek=0.5*p.m*seq[i+1]*seq[i+1];
+    const eta=Math.min(100,(Ek-0.5*p.m*seq[i]*seq[i])/Ec2*100);
+    const barW=Math.round(seq[i+1]/vMax*100);
+
+    tbody.innerHTML+=`<tr>
+      <td class="td-gold">ETAPA ${i+1}</td>
+      <td>${Vc2.toFixed(0)}</td>
+      <td>${Ec2.toFixed(4)}</td>
+      <td class="td-hi">+${dv.toFixed(1)}</td>
+      <td class="td-hi">${seq[i+1].toFixed(1)}</td>
+      <td>${Ek.toFixed(4)}</td>
+      <td>${Math.abs(eta).toFixed(1)}</td>
+      <td class="bar-cell">
+        <div class="bar-fill" style="width:${barW}%"></div>
+      </td>
+    </tr>`;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   GAUGES
+══════════════════════════════════════════════════════ */
+function buildGauges(){
+  const p=getParams();
+  const vFinal=computeFinalVel(p);
+  const Ek=0.5*p.m*vFinal*vFinal;
+  const eta=Math.min(100,Ek/p.Estored*100);
+
+  const gaugeData=[
+    {label:'ENERGÍA ALMACENADA',val:p.Estored.toFixed(3),unit:'J',pct:Math.min(100,p.Estored/10*100),col:'#00D4FF'},
+    {label:'ENERGÍA CINÉTICA',val:Ek.toFixed(3),unit:'J',pct:Math.min(100,Ek/10*100),col:'#FFB800'},
+    {label:'EFICIENCIA',val:eta.toFixed(1),unit:'%',pct:eta,col:'#00D4FF'},
+    {label:'VELOCIDAD FINAL',val:vFinal.toFixed(1),unit:'m/s',pct:Math.min(100,vFinal/1500*100),col:'#FFB800'},
+    {label:'VOLTAJE SISTEMA',val:p.V,unit:'V',pct:p.V/500*100,col:'#00D4FF'},
+    {label:'CAPACITANCIA',val:(+document.getElementById('sl-cap').value),unit:'μF',pct:+document.getElementById('sl-cap').value/200*100,col:'#FFB800'},
+  ];
+
+  const grid=document.getElementById('gauges-grid');
+  grid.innerHTML='';
+  gaugeData.forEach(g=>{
+    const angle=(g.pct/100)*220-110;
+    const r=54; const cx=70; const cy=70;
+    const arc=(pct,col,width,opa=1)=>{
+      const a0=-110; const a1=a0+pct*220/100;
+      const toRad=d=>d*Math.PI/180;
+      const x1=cx+r*Math.cos(toRad(a0)); const y1=cy+r*Math.sin(toRad(a0));
+      const x2=cx+r*Math.cos(toRad(a1)); const y2=cy+r*Math.sin(toRad(a1));
+      const large=pct*220/100>180?1:0;
+      return `<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${large},1 ${x2.toFixed(2)},${y2.toFixed(2)}" fill="none" stroke="${col}" stroke-width="${width}" stroke-linecap="round" opacity="${opa}"/>`;
+    };
+    const needle=()=>{
+      const a=(g.pct/100)*220-110;
+      const nr=42;
+      const nx=cx+nr*Math.cos(a*Math.PI/180);
+      const ny=cy+nr*Math.sin(a*Math.PI/180);
+      return `<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(2)}" y2="${ny.toFixed(2)}" stroke="${g.col}" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+              <circle cx="${cx}" cy="${cy}" r="4" fill="${g.col}" opacity="0.8"/>`;
+    };
+
+    grid.innerHTML+=`
+    <div class="gauge-card glass ${g.col==='#FFB800'?'gold-border':''}">
+      <svg class="gauge-svg" viewBox="0 0 140 120">
+        ${arc(100,'rgba(0,212,255,0.1)',8)}
+        ${arc(g.pct,g.col,6)}
+        ${needle()}
+        <text x="${cx}" y="${cy+22}" text-anchor="middle" font-family="'Orbitron'" font-size="12" font-weight="700" fill="${g.col}">${g.val}</text>
+        <text x="${cx}" y="${cy+35}" text-anchor="middle" font-family="'Share Tech Mono'" font-size="9" fill="rgba(200,232,255,0.5)">${g.unit}</text>
+      </svg>
+      <div class="gauge-label">${g.label}</div>
+    </div>`;
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════ */
+updateFormulas();
+updateTable();
+buildGauges();
+
+// MathJax typeset
+if(window.MathJax){
+  MathJax.typesetPromise();
+}
+
+// Continual sim canvas loop (even when not running, for pulse decay)
+(function idleLoop(){
+  if(!simState.running) drawSim();
+  requestAnimationFrame(idleLoop);
+})();
+</script>
+</body>
+</html>
